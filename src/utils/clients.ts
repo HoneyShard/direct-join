@@ -32,13 +32,14 @@ export async function launchClient(
     if (client !== CLIENT_NAME_DELTA) {
         const unlocked = await invoke<number>("unlock_keychain", {
             profileId,
-        }).catch((err) => new Error(err));
+        }).catch((err: string) => new Error(err));
         if (unlocked instanceof Error) throw unlocked;
 
         if (unlocked === 50)
             throw new Error(
                 "Keychain was not found. It seems like your profile is corrupted, please remove the profile and create it again.",
             );
+        else if (unlocked === 51) {} // Keychain cannot be unlocked, just proceed
         else if (unlocked !== 0)
             throw new Error(`Could not unlock keychain with code ${unlocked}.`);
     }
