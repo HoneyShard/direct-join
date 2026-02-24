@@ -82,16 +82,6 @@ pub async fn update_hydrobridge(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn update_crypticbridge(
-    state: tauri::State<'_, crate::crypticbridge::AppState>,
-    id: String,
-) -> Result<(), ()> {
-    let mut profile_id = state.id.lock().await;
-    *profile_id = id;
-    Ok(())
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(non_snake_case)]
 pub struct Profile {
@@ -178,17 +168,13 @@ if executor == 'MacSploit' then
 end
 
 -- Custom Execution Bridge
-if executor == 'Hydrogen' or executor == 'Ronix' or executor == 'Cryptic Mac' then
+if executor == 'Hydrogen' or executor == 'Ronix' then
     local port = 6969 -- Hydrogen
-    if executor == 'Cryptic Mac' then
-        port = 5200
-    end
 
     task.defer(function()
         local HttpService = game:GetService('HttpService')
-        local HttpGet = game.HttpGet -- Cache the function due to checkcaller not working reliably in Cryptic
         while task.wait(1) do
-            local response = HttpGet(game, 'http://localhost:' .. port .. '/queue/' .. profile)
+            local response = game:HttpGet('http://localhost:' .. port .. '/queue/' .. profile)
             local ok, queue = pcall(function()
                 return HttpService:JSONDecode(response)
             end)
@@ -213,7 +199,7 @@ end",
     let profile_dir = app_data_dir.join("environments").join(id);
     fs::create_dir_all(&profile_dir).map_err(|e| e.to_string())?;
 
-    // MacSploit & Cryptic - Documents
+    // MacSploit - Documents
     let documents_dir = profile_dir.join("Documents");
     fs::create_dir_all(&documents_dir).map_err(|e| e.to_string())?;
 
@@ -256,20 +242,6 @@ end",
     // Ronix - Init Script
     let mut file =
         File::create(&ronix_autoexe_dir.join("RaptorManager.lua")).map_err(|e| e.to_string())?;
-    file.write_all(&init_script.as_bytes())
-        .map_err(|e| e.to_string())?;
-
-    // Cryptic - CrypticMac
-    let crypticmac_dir = documents_dir.join("CrypticMac");
-    fs::create_dir_all(&crypticmac_dir).map_err(|e| e.to_string())?;
-
-    // Cryptic - Automatic Execution
-    let cryptic_autoexe_dir = crypticmac_dir.join("Autoexec");
-    fs::create_dir_all(&cryptic_autoexe_dir).map_err(|e| e.to_string())?;
-
-    // Cryptic - Init Script
-    let mut file =
-        File::create(&cryptic_autoexe_dir.join("RaptorManager.lua")).map_err(|e| e.to_string())?;
     file.write_all(&init_script.as_bytes())
         .map_err(|e| e.to_string())?;
 
@@ -354,11 +326,8 @@ if executor == 'MacSploit' then
 end
 
 -- Custom Execution Bridge
-if executor == 'Hydrogen' or executor == 'Ronix' or executor == 'Cryptic Mac' then
+if executor == 'Hydrogen' or executor == 'Ronix' then
     local port = 6969 -- Hydrogen
-    if executor == 'Cryptic Mac' then
-        port = 5200
-    end
 
     task.defer(function()
         local HttpService = game:GetService('HttpService')

@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
 import {
-    CLIENT_NAME_CRYPTIC,
     CLIENT_NAME_DELTA,
     CLIENT_NAME_HYDROGEN,
     CLIENT_NAME_MACSPLOIT,
@@ -175,15 +174,6 @@ export async function installClient(client: string) {
 
         clientVersion = version.ronix.macos.roblox_version;
         dylibVersion = version.ronix.macos.exploit_version;
-    } else if (client === CLIENT_NAME_CRYPTIC) {
-        if (
-            !version.cryptic.Versions.Roblox ||
-            !version.cryptic.Versions.Software
-        )
-            throw new Error("Cryptic version is not fetched yet.");
-
-        clientVersion = version.cryptic.Versions.Roblox;
-        dylibVersion = version.cryptic.Versions.Software;
     } else if (client === CLIENT_NAME_OPIUMWARE) {
         if (
             !version.opiumware.SupportedRobloxVersion ||

@@ -2,8 +2,7 @@ export type ClientName =
     | "Vanilla"
     | "MacSploit"
     | "Hydrogen"
-    | "Ronix"
-    | "Cryptic";
+    | "Ronix";
 
 export interface IState {
     profileId: string;

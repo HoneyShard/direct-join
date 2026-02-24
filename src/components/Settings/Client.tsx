@@ -1,6 +1,5 @@
 import type { IClient } from "../../types/config";
 import type {
-    ICrypticVersion,
     IHydrogenVersion,
     IMacsploitVersion,
     IOpiumwareVersion,
@@ -11,7 +10,6 @@ import {
     CLIENT_NAME_MACSPLOIT,
     CLIENT_NAME_HYDROGEN,
     CLIENT_NAME_RONIX,
-    CLIENT_NAME_CRYPTIC,
     STATUS_NOT_INSTALLED,
     CLIENT_NAME_DELTA,
     CLIENT_NAME_OPIUMWARE,
@@ -28,7 +26,6 @@ interface Props {
         | IRobloxVersion
         | IMacsploitVersion
         | IHydrogenVersion
-        | ICrypticVersion
         | IOpiumwareVersion
         | string;
     thumbnail: string;
@@ -62,8 +59,6 @@ export default function Client({
     } else if (client === CLIENT_NAME_RONIX) {
         latestVersion =
             (version as IHydrogenVersion).macos.exploit_version ?? null;
-    } else if (client === CLIENT_NAME_CRYPTIC) {
-        latestVersion = (version as ICrypticVersion).Versions.Software;
     } else if (client === CLIENT_NAME_OPIUMWARE) {
         latestVersion = (version as IOpiumwareVersion).CurrentVersion;
     } else if (client === CLIENT_NAME_DELTA) {

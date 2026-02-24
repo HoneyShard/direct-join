@@ -1,7 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useVersionStore } from "../store";
 import type {
-    ICrypticVersion,
     IHydrogenVersion,
     IMacsploitVersion,
     IOpiumwareVersion,
@@ -26,9 +25,6 @@ export async function fetchClientVersions() {
     const hydrogenPromise = invoke<IHydrogenVersion>(
         "get_hydrogen_version",
     ).catch((err) => new Error(err));
-    const crypticPromise = invoke<ICrypticVersion>("get_cryptic_version").catch(
-        (err) => new Error(err),
-    );
     const opiumwarePromise = invoke<IOpiumwareVersion>(
         "get_opiumware_version",
     ).catch((err) => new Error(err));
@@ -36,12 +32,11 @@ export async function fetchClientVersions() {
         (err) => new Error(err),
     );
 
-    const [roblox, macsploit, hydrogen, cryptic, opiumware, delta] =
+    const [roblox, macsploit, hydrogen, opiumware, delta] =
         await Promise.all([
             robloxPromise,
             macsploitPromise,
             hydrogenPromise,
-            crypticPromise,
             opiumwarePromise,
             deltaPromise,
         ]);
@@ -64,12 +59,6 @@ export async function fetchClientVersions() {
     }
     version.setHydrogen(hydrogen);
     version.setRonix(hydrogen); // theyre both the same lol
-
-    if (cryptic instanceof Error) {
-        showErrorModal("Failed to fetch Cryptic version", cryptic.message);
-        return false;
-    }
-    version.setCryptic(cryptic);
 
     if (opiumware instanceof Error) {
         showErrorModal("Failed to fetch Opiumware version", opiumware.message);
