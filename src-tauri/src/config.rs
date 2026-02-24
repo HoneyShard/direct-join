@@ -142,14 +142,12 @@ local profile = '{}'
 local executor = identifyexecutor()
 
 -- Custom Decompiler
-if not executor:find('Opiumware') then -- disable custom decompiler for Opiumware because request function reads body as cstring thus breaks this
-    getgenv().decompile = function(script)
-        return request({{
-            Url = 'http://localhost:6767/decompile',
-            Method = 'POST',
-            Body = getscriptbytecode(script)
-        }}).Body
-    end
+getgenv().decompile = function(script)
+    return request({{
+        Url = 'http://localhost:6767/decompile',
+        Method = 'POST',
+        Body = getscriptbytecode(script)
+    }}).Body
 end
 
 -- getcustomasset
