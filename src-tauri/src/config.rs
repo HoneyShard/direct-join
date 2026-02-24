@@ -139,8 +139,6 @@ pub fn create_environment(app_handle: AppHandle, id: String) -> Result<(), Strin
         "-- Raptor Manager Init Script; DO NOT TOUCH!
 local profile = '{}'
 
-local executor = identifyexecutor()
-
 -- Custom Decompiler
 getgenv().decompile = function(script)
     return request({{
@@ -150,17 +148,17 @@ getgenv().decompile = function(script)
     }}).Body
 end
 
+local executor = identifyexecutor()
+
 -- getcustomasset
 if executor == 'MacSploit' then
-    local old = getgenv().getcustomasset
     getgenv().getcustomasset = function(path)
-        local customasset = old(path)
         local response = request({{
             Url = 'http://localhost:6767/getcustomasset/' .. profile,
             Method = 'POST',
-            Body = customasset
+            Body = path
         }}).Body
-        assert(response:find('^rbxasset://custom/'), response)
+        assert(response:find('^rbxasset://models/LivePackages'), response)
         return response
     end
 end
@@ -257,6 +255,7 @@ end",
     file.write_all(&init_script.as_bytes())
         .map_err(|e| e.to_string())?;
 
+        /*
     // Roblox - Custom Assets
     let content_dir = profile_dir
         .join("Applications")
@@ -264,7 +263,7 @@ end",
         .join("Contents")
         .join("Resources")
         .join("content");
-    fs::create_dir_all(&content_dir).map_err(|e| e.to_string())?;
+    fs::create_dir_all(&content_dir).map_err(|e| e.to_string())?;*/
 
     // Hydrogen - Library
     let library_dir = profile_dir.join("Library");
@@ -310,15 +309,13 @@ local executor = identifyexecutor()
 
 -- getcustomasset
 if executor == 'MacSploit' then
-    local old = getgenv().getcustomasset
     getgenv().getcustomasset = function(path)
-        local customasset = old(path)
         local response = request({{
             Url = 'http://localhost:6767/getcustomasset/' .. profile,
             Method = 'POST',
-            Body = customasset
+            Body = path
         }}).Body
-        assert(response:find('^rbxasset://custom/'), response)
+        assert(response:find('^rbxasset://models/LivePackages/'), response)
         return response
     end
 end
