@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
 import {
-    CLIENT_NAME_CRYPTIC,
     CLIENT_NAME_DELTA,
     CLIENT_NAME_HYDROGEN,
     CLIENT_NAME_MACSPLOIT,
@@ -32,13 +31,14 @@ export async function launchClient(
     if (client !== CLIENT_NAME_DELTA) {
         const unlocked = await invoke<number>("unlock_keychain", {
             profileId,
-        }).catch((err) => new Error(err));
+        }).catch((err: string) => new Error(err));
         if (unlocked instanceof Error) throw unlocked;
 
         if (unlocked === 50)
             throw new Error(
                 "Keychain was not found. It seems like your profile is corrupted, please remove the profile and create it again.",
             );
+        else if (unlocked === 51) {} // Keychain cannot be unlocked, just proceed
         else if (unlocked !== 0)
             throw new Error(`Could not unlock keychain with code ${unlocked}.`);
     }
@@ -174,15 +174,6 @@ export async function installClient(client: string) {
 
         clientVersion = version.ronix.macos.roblox_version;
         dylibVersion = version.ronix.macos.exploit_version;
-    } else if (client === CLIENT_NAME_CRYPTIC) {
-        if (
-            !version.cryptic.Versions.Roblox ||
-            !version.cryptic.Versions.Software
-        )
-            throw new Error("Cryptic version is not fetched yet.");
-
-        clientVersion = version.cryptic.Versions.Roblox;
-        dylibVersion = version.cryptic.Versions.Software;
     } else if (client === CLIENT_NAME_OPIUMWARE) {
         if (
             !version.opiumware.SupportedRobloxVersion ||

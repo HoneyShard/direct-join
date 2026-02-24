@@ -4,7 +4,6 @@ import type { IModal } from "./types/modal";
 import type { IProfile } from "./types/profile";
 import type { IState } from "./types/state";
 import type {
-    ICrypticVersion,
     IHydrogenVersion,
     IMacsploitVersion,
     IOpiumwareVersion,
@@ -97,14 +96,12 @@ export interface VersionState {
     macsploit: IMacsploitVersion;
     hydrogen: IHydrogenVersion;
     ronix: IHydrogenVersion;
-    cryptic: ICrypticVersion;
     opiumware: IOpiumwareVersion;
     delta: string;
     setRoblox: (version: IRobloxVersion) => void;
     setMacsploit: (version: IMacsploitVersion) => void;
     setHydrogen: (version: IHydrogenVersion) => void;
     setRonix: (version: IHydrogenVersion) => void;
-    setCryptic: (version: ICrypticVersion) => void;
     setOpiumware: (version: IOpiumwareVersion) => void;
     setDelta: (version: string) => void;
 }
@@ -141,14 +138,6 @@ export const useVersionStore = create<VersionState>()((set) => ({
         ios: {},
         android: {},
     },
-    cryptic: {
-        Platform: "Mac-Internal",
-        Versions: {
-            Software: "",
-            Roblox: "",
-        },
-        Changelog: "",
-    },
     opiumware: {
         CurrentVersion: "",
         SupportedRobloxVersion: "",
@@ -160,7 +149,6 @@ export const useVersionStore = create<VersionState>()((set) => ({
     setMacsploit: (version) => set(() => ({ macsploit: version })),
     setHydrogen: (version) => set(() => ({ hydrogen: version })),
     setRonix: (version) => set(() => ({ ronix: version })),
-    setCryptic: (version) => set(() => ({ cryptic: version })),
     setOpiumware: (version) => set(() => ({ opiumware: version })),
     setDelta: (version) => set(() => ({ delta: version })),
 }));

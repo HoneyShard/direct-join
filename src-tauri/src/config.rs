@@ -82,16 +82,6 @@ pub async fn update_hydrobridge(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn update_crypticbridge(
-    state: tauri::State<'_, crate::crypticbridge::AppState>,
-    id: String,
-) -> Result<(), ()> {
-    let mut profile_id = state.id.lock().await;
-    *profile_id = id;
-    Ok(())
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(non_snake_case)]
 pub struct Profile {
@@ -149,46 +139,38 @@ pub fn create_environment(app_handle: AppHandle, id: String) -> Result<(), Strin
         "-- Raptor Manager Init Script; DO NOT TOUCH!
 local profile = '{}'
 
-local executor = identifyexecutor()
-
 -- Custom Decompiler
-if not executor:find('Opiumware') then -- disable custom decompiler for Opiumware because request function reads body as cstring thus breaks this
-    getgenv().decompile = function(script)
-        return request({{
-            Url = 'http://localhost:6767/decompile',
-            Method = 'POST',
-            Body = getscriptbytecode(script)
-        }}).Body
-    end
+getgenv().decompile = function(script)
+    return request({{
+        Url = 'http://localhost:6767/decompile',
+        Method = 'POST',
+        Body = getscriptbytecode(script)
+    }}).Body
 end
+
+local executor = identifyexecutor()
 
 -- getcustomasset
 if executor == 'MacSploit' then
-    local old = getgenv().getcustomasset
     getgenv().getcustomasset = function(path)
-        local customasset = old(path)
         local response = request({{
             Url = 'http://localhost:6767/getcustomasset/' .. profile,
             Method = 'POST',
-            Body = customasset
+            Body = path
         }}).Body
-        assert(response:find('^rbxasset://custom/'), response)
+        assert(response:find('^rbxasset://models/LivePackages'), response)
         return response
     end
 end
 
 -- Custom Execution Bridge
-if executor == 'Hydrogen' or executor == 'Ronix' or executor == 'Cryptic Mac' then
+if executor == 'Hydrogen' or executor == 'Ronix' then
     local port = 6969 -- Hydrogen
-    if executor == 'Cryptic Mac' then
-        port = 5200
-    end
 
     task.defer(function()
         local HttpService = game:GetService('HttpService')
-        local HttpGet = game.HttpGet -- Cache the function due to checkcaller not working reliably in Cryptic
         while task.wait(1) do
-            local response = HttpGet(game, 'http://localhost:' .. port .. '/queue/' .. profile)
+            local response = game:HttpGet('http://localhost:' .. port .. '/queue/' .. profile)
             local ok, queue = pcall(function()
                 return HttpService:JSONDecode(response)
             end)
@@ -213,7 +195,7 @@ end",
     let profile_dir = app_data_dir.join("environments").join(id);
     fs::create_dir_all(&profile_dir).map_err(|e| e.to_string())?;
 
-    // MacSploit & Cryptic - Documents
+    // MacSploit - Documents
     let documents_dir = profile_dir.join("Documents");
     fs::create_dir_all(&documents_dir).map_err(|e| e.to_string())?;
 
@@ -259,20 +241,6 @@ end",
     file.write_all(&init_script.as_bytes())
         .map_err(|e| e.to_string())?;
 
-    // Cryptic - CrypticMac
-    let crypticmac_dir = documents_dir.join("CrypticMac");
-    fs::create_dir_all(&crypticmac_dir).map_err(|e| e.to_string())?;
-
-    // Cryptic - Automatic Execution
-    let cryptic_autoexe_dir = crypticmac_dir.join("Autoexec");
-    fs::create_dir_all(&cryptic_autoexe_dir).map_err(|e| e.to_string())?;
-
-    // Cryptic - Init Script
-    let mut file =
-        File::create(&cryptic_autoexe_dir.join("RaptorManager.lua")).map_err(|e| e.to_string())?;
-    file.write_all(&init_script.as_bytes())
-        .map_err(|e| e.to_string())?;
-
     // Opiumware
     let opiumware_dir = profile_dir.join("Opiumware");
     fs::create_dir_all(&opiumware_dir).map_err(|e| e.to_string())?;
@@ -287,6 +255,7 @@ end",
     file.write_all(&init_script.as_bytes())
         .map_err(|e| e.to_string())?;
 
+        /*
     // Roblox - Custom Assets
     let content_dir = profile_dir
         .join("Applications")
@@ -294,7 +263,7 @@ end",
         .join("Contents")
         .join("Resources")
         .join("content");
-    fs::create_dir_all(&content_dir).map_err(|e| e.to_string())?;
+    fs::create_dir_all(&content_dir).map_err(|e| e.to_string())?;*/
 
     // Hydrogen - Library
     let library_dir = profile_dir.join("Library");
@@ -340,25 +309,20 @@ local executor = identifyexecutor()
 
 -- getcustomasset
 if executor == 'MacSploit' then
-    local old = getgenv().getcustomasset
     getgenv().getcustomasset = function(path)
-        local customasset = old(path)
         local response = request({{
             Url = 'http://localhost:6767/getcustomasset/' .. profile,
             Method = 'POST',
-            Body = customasset
+            Body = path
         }}).Body
-        assert(response:find('^rbxasset://custom/'), response)
+        assert(response:find('^rbxasset://models/LivePackages/'), response)
         return response
     end
 end
 
 -- Custom Execution Bridge
-if executor == 'Hydrogen' or executor == 'Ronix' or executor == 'Cryptic Mac' then
+if executor == 'Hydrogen' or executor == 'Ronix' then
     local port = 6969 -- Hydrogen
-    if executor == 'Cryptic Mac' then
-        port = 5200
-    end
 
     task.defer(function()
         local HttpService = game:GetService('HttpService')

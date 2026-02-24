@@ -30,17 +30,6 @@ export interface IHydrogenPlatformVersion {
     changelog?: string;
 }
 
-export interface ICrypticVersion {
-    Platform: string;
-    Versions: ICrypticVersions;
-    Changelog: string;
-}
-
-export interface ICrypticVersions {
-    Software: string;
-    Roblox: string;
-}
-
 export interface IOpiumwareVersion {
     CurrentVersion: string;
     SupportedRobloxVersion: string;

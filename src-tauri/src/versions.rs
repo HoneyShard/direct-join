@@ -132,52 +132,6 @@ pub async fn get_hydrogen_version(app_handle: AppHandle) -> Result<HydrogenVersi
 
 #[derive(Debug, Serialize, Deserialize)]
 #[allow(non_snake_case)]
-pub struct CrypticVersion {
-    pub Platform: String,
-    pub Versions: CrypticVersions,
-    pub Changelog: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[allow(non_snake_case)]
-pub struct CrypticVersions {
-    pub Software: String,
-    pub Roblox: String,
-}
-
-#[tauri::command]
-pub async fn get_cryptic_version(app_handle: AppHandle) -> Result<CrypticVersion, String> {
-    let client = Client::new();
-    let url = format!(
-        "https://raw.githubusercontent.com/RSDTestAccount/Endpoints/main/Cryptic-Mac-Internal"
-    );
-    let response = client
-        .get(url)
-        .header(
-            "User-Agent",
-            format!(
-                "RaptorManager/{}",
-                app_handle.package_info().version.to_string()
-            ),
-        )
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
-
-    let status = response.status();
-    if !status.is_success() {
-        return Err(status.to_string());
-    }
-
-    let body = response
-        .json::<CrypticVersion>()
-        .await
-        .map_err(|e| e.to_string())?;
-    Ok(body)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[allow(non_snake_case)]
 pub struct OpiumwareVersion {
     pub CurrentVersion: String,
     pub SupportedRobloxVersion: String,

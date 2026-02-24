@@ -1,7 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
 import {
-    CLIENT_NAME_CRYPTIC,
     CLIENT_NAME_HYDROGEN,
     CLIENT_NAME_MACSPLOIT,
     CLIENT_NAME_OPIUMWARE,
@@ -55,7 +54,6 @@ export default function AccountInfo({ profile, state }: Props) {
                 [
                     CLIENT_NAME_HYDROGEN,
                     CLIENT_NAME_RONIX,
-                    CLIENT_NAME_CRYPTIC,
                 ].includes(event.payload.client)
             )
                 setContext(event.payload.profileId);
@@ -80,7 +78,7 @@ export default function AccountInfo({ profile, state }: Props) {
                     title:
                         profile?.name ??
                         `Profile: ${event.payload.profileId} ${PROFILE_CRASHED_SUFFIX}`,
-                    text: `Your client has crashed with code ${event.payload.exitCode}.`,
+                    text: `Your client has crashed.\nThis is usually an issue with the client, please contact the corresponding developers.`,
                     buttons: [
                         {
                             text: "Okay",
@@ -268,7 +266,6 @@ export default function AccountInfo({ profile, state }: Props) {
                 [
                     CLIENT_NAME_HYDROGEN,
                     CLIENT_NAME_RONIX,
-                    CLIENT_NAME_CRYPTIC,
                 ].includes(state.client)
             ) {
                 if (state.profileId === context.id) {
@@ -361,7 +358,6 @@ export default function AccountInfo({ profile, state }: Props) {
                             [
                                 CLIENT_NAME_HYDROGEN,
                                 CLIENT_NAME_RONIX,
-                                CLIENT_NAME_CRYPTIC,
                             ].includes(state.client) &&
                             state.connected &&
                             state.pid && (

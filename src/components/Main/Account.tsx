@@ -3,7 +3,6 @@ import { Menu } from "@tauri-apps/api/menu";
 import { AnimatePresence } from "motion/react";
 import { useState } from "react";
 import {
-    CLIENT_NAME_CRYPTIC,
     CLIENT_NAME_HYDROGEN,
     CLIENT_NAME_MACSPLOIT,
     CLIENT_NAME_OPIUMWARE,
@@ -249,7 +248,6 @@ export default function Account({ active, profile, state, onClick }: Props) {
                 [
                     CLIENT_NAME_HYDROGEN,
                     CLIENT_NAME_RONIX,
-                    CLIENT_NAME_CRYPTIC,
                 ].includes(state.client)
             ) {
                 if (state.profileId === context.id) {

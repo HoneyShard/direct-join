@@ -8,7 +8,6 @@ pub mod binarycookies;
 mod client;
 mod config;
 mod cookies;
-mod crypticbridge;
 mod decompiler;
 mod hydrobridge;
 mod installer;
@@ -34,7 +33,6 @@ pub fn run() {
             config::write_config,
             config::update_decompiler,
             config::update_hydrobridge,
-            config::update_crypticbridge,
             config::read_profiles,
             config::write_profiles,
             config::create_environment,
@@ -58,7 +56,6 @@ pub fn run() {
             versions::get_roblox_version,
             versions::get_macsploit_version,
             versions::get_hydrogen_version,
-            versions::get_cryptic_version,
             versions::get_opiumware_version,
             versions::get_delta_version,
             installer::install_client,
@@ -110,27 +107,6 @@ pub fn run() {
                         let _ = hydrobridge_app_handle.emit_to("main", "message", Message {
                             title: "Failed to run Hydrobridge".into(),
                             description: format!("{}\nPlease close open instances and restart Manager to use Hydrobridge.", err)
-                        });
-                    });
-                }
-            });
-
-            // Crypticbridge Init
-            let crypticbridge_state = crypticbridge::AppState {
-                queue: Arc::new(Mutex::new(HashMap::new())),
-                id: Arc::new(Mutex::new("".to_string()))
-            };
-
-            app.manage(crypticbridge_state.clone());
-
-            let crypticbridge_app_handle = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                if let Err(err) = crypticbridge::serve(crypticbridge_state).await {
-                    let window = crypticbridge_app_handle.get_webview_window("main").unwrap();
-                    window.once("ready", move |_| {
-                        let _ = crypticbridge_app_handle.emit_to("main", "message", Message {
-                            title: "Failed to run Crypticbridge".into(),
-                            description: format!("{}\nPlease close open instances and restart Manager to use Crypticbridge.", err)
                         });
                     });
                 }

@@ -267,6 +267,20 @@ pub async fn install_ipa(
         .await
         .map_err(|e| e.to_string())?;
 
+    if client == "Delta" {
+        // Roblox.app/libgloop.dylib
+        let libgloop_dir = app_data_dir
+            .join("clients")
+            .join(client.to_owned() + ".app")
+            .join("libgloop.dylib");
+        if !libgloop_dir.exists() {
+            return Err("Could not find the target dylib file. An anti-virus software might be interrupting the installation process.".into());
+        }
+        codesign(&app_handle, &libgloop_dir, false)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
+
     // Roblox.app/Frameworks/Persona2.framework
     let persona_dir = app_data_dir
         .join("clients")
@@ -310,8 +324,8 @@ pub async fn install_ipa(
         .map_err(|e| e.to_string())?;
 
     if client == "Delta" {
-        // Roblox.app/Frameworks/libgloop.dylib
-        convert(&app_handle, &roblox_dir.join("Frameworks").join("libgloop.dylib"))
+        // Roblox.app/libgloop.dylib
+        convert(&app_handle, &roblox_dir.join("libgloop.dylib"))
             .await
             .map_err(|e| e.to_string())?;
     }
@@ -344,10 +358,12 @@ pub async fn install_ipa(
         .await
         .map_err(|e| e.to_string())?;
 
-    // Roblox.app/Frameworks/libgloop.dylib
-    codesign(&app_handle, &roblox_dir.join("Frameworks").join("libgloop.dylib"), true)
-        .await
-        .map_err(|e| e.to_string())?;
+    if client == "Delta" {
+        // Roblox.app/libgloop.dylib
+        codesign(&app_handle, &roblox_dir.join("libgloop.dylib"), true)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
 
     // Roblox.app/Frameworks/Persona2.framework
     codesign(&app_handle, &persona_dir, true)

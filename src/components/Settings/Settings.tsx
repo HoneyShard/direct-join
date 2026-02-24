@@ -3,21 +3,19 @@ import { listen } from "@tauri-apps/api/event";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import {
-    CLIENT_NAME_CRYPTIC,
     CLIENT_NAME_DELTA,
     CLIENT_NAME_HYDROGEN,
     CLIENT_NAME_MACSPLOIT,
     CLIENT_NAME_OPIUMWARE,
-    // CLIENT_NAME_RONIX,
+    CLIENT_NAME_RONIX,
     CLIENT_NAME_VANILLA,
     DECOMPILER_LIST,
-    URL_CRYPTIC,
     URL_DELTA,
     URL_HYDROGEN,
     URL_OPIUMWARE,
     URL_RAPTOR_FUN,
     URL_ROBLOX_HOME,
-    // URL_RONIX_STUDIOS,
+    URL_RONIX_STUDIOS,
 } from "../../constants";
 import { useConfigStore, useModalStore, useVersionStore } from "../../store";
 import type { IInstallProgress } from "../../types/install";
@@ -421,11 +419,8 @@ export default function Settings(_props: Props) {
     const hydrogenInstallation = config.config.clients.find(
         (client) => client.name === CLIENT_NAME_HYDROGEN,
     );
-    // const ronixInstallation = config.config.clients.find(
-    //     (client) => client.name === CLIENT_NAME_RONIX,
-    // );
-    const crypticInstallation = config.config.clients.find(
-        (client) => client.name === CLIENT_NAME_CRYPTIC,
+    const ronixInstallation = config.config.clients.find(
+        (client) => client.name === CLIENT_NAME_RONIX,
     );
     const opiumwareInstallation = config.config.clients.find(
         (client) => client.name === CLIENT_NAME_OPIUMWARE,
@@ -478,14 +473,14 @@ export default function Settings(_props: Props) {
                     style={{ flex: 1 }}
                 >
                     <Client
-                        installation={crypticInstallation}
-                        version={version.cryptic}
-                        thumbnail="/cryptic.webp"
+                        installation={opiumwareInstallation}
+                        version={version.opiumware}
+                        thumbnail="/opiumware.jpg"
                         onInstall={onInstall}
                         onRemove={onRemove}
-                        href={URL_CRYPTIC}
+                        href={URL_OPIUMWARE}
                     >
-                        Cryptic
+                        Opiumware
                     </Client>
                 </motion.div>
             </div>
@@ -514,23 +509,6 @@ export default function Settings(_props: Props) {
                     style={{ flex: 1 }}
                 >
                     <Client
-                        installation={opiumwareInstallation}
-                        version={version.opiumware}
-                        thumbnail="/opiumware.jpg"
-                        onInstall={onInstall}
-                        onRemove={onRemove}
-                        href={URL_OPIUMWARE}
-                    >
-                        Opiumware
-                    </Client>
-                </motion.div>
-                {/* <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 4 * 0.05 }}
-                    style={{ flex: 1 }}
-                >
-                    <Client
                         installation={ronixInstallation}
                         version={version.ronix}
                         thumbnail="/ronix.png"
@@ -538,9 +516,9 @@ export default function Settings(_props: Props) {
                         onRemove={onRemove}
                         href={URL_RONIX_STUDIOS}
                     >
-                        Ronix -> (probably) discontinued, just hide from the frontend for future use
+                        Ronix
                     </Client>
-                </motion.div> */}
+                </motion.div>
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}

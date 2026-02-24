@@ -209,22 +209,9 @@ pub async fn launch_client(
                         port: Some(port),
                     },
                 );
-            } else if line.contains("[ Cryptic Mac ") && line.contains(" Launched running in Release Mode ]") {
-                let port = 5200;
-                let _ = app_handle_stdout.emit_to(
-                    "main",
-                    "client_open",
-                    State {
-                        profile_id: profile_id_stdout.clone(),
-                        connected: true,
-                        pid: pid,
-                        client: Some("Cryptic".into()),
-                        port: Some(port),
-                    },
-                );
-            } else if line.starts_with("\u{1b}[32m[ * ] Listening on port ") {
+            } else if line.starts_with("\u{1b}[32m[ Communication ] Listening on port ") {
                 let port = line
-                    .replace("\u{1b}[32m[ * ] Listening on port ", "")
+                    .replace("\u{1b}[32m[ Communication ] Listening on port ", "")
                     .replace("...\u{1b}[0m", "")
                     .parse::<u16>()
                     .unwrap();

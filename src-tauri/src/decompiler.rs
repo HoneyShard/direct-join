@@ -94,12 +94,8 @@ async fn getcustomasset(State(state): State<AppState>, Path(id): Path<String>, b
     let app_data_dir = state.app_handle.path().app_data_dir().unwrap();
 
     let asset_dir = app_data_dir.join("environments").join(&id)
-        .join("Applications")
-        .join("Roblox.app")
-        .join("Contents")
-        .join("Resources")
-        .join("content")
-        .join("custom")
+        .join("Documents")
+        .join("Macsploit Workspace")
         .join(&asset_name);
 
     if asset_dir.components().any(|c| c == Component::ParentDir) {
@@ -116,15 +112,12 @@ async fn getcustomasset(State(state): State<AppState>, Path(id): Path<String>, b
         .join("Contents")
         .join("Resources")
         .join("content")
-        .join("custom")
+        .join("models")
+        .join("LivePackages")
         .join(&id);
 
     if client_content_dir.components().any(|c| c == Component::ParentDir) {
         return format!("Profile '{}' attempted path traversal.", &id);
-    }
-
-    if let Err(err) = fs::create_dir_all(&client_content_dir).await {
-        return err.to_string();
     }
 
     let client_asset_dir = client_content_dir.join(&asset_name);
@@ -132,9 +125,14 @@ async fn getcustomasset(State(state): State<AppState>, Path(id): Path<String>, b
         return format!("Asset '{}' attempted path traversal.", &asset_name);
     }
 
-    if let Err(err) = fs::rename(&asset_dir, &client_asset_dir).await {
+    // create asset folder (support subfolder for getcustomasset)
+    if let Err(err) = fs::create_dir_all(&client_asset_dir.parent().unwrap()).await {
         return err.to_string();
     }
 
-    format!("rbxasset://custom/{}/{}", &id, &asset_name)
+    if let Err(err) = fs::copy(&asset_dir, &client_asset_dir).await {
+        return err.to_string();
+    }
+
+    format!("rbxasset://models/LivePackages/{}/{}", &id, &asset_name)
 }
