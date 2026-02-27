@@ -3,9 +3,8 @@ import { useFilterStore, useStore } from "../../store";
 import type { IProfile } from "../../types/profile";
 import Account from "./Account";
 import AccountManager from "./AccountManager";
-import { UI_STYLES } from "../../constants";
-import Text from "../Shared/Text";
 import InformationIcon from "../icons/InformationIcon";
+import Text from "../Shared/Text";
 
 interface Props {
     children?: React.ReactNode;
