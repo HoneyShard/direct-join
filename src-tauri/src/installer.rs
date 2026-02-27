@@ -176,8 +176,6 @@ pub async fn install_roblox(
         let robloxplayer_dir = app_data_dir.join("clients").join("RobloxPlayer.app");
 
         let executable_dir = robloxplayer_dir.join("Contents").join("MacOS");
-        let roblox_app_dir = executable_dir.join("Roblox.app");
-        fs::remove_dir_all(roblox_app_dir).map_err(|e| e.to_string())?;
 
         let roblox_installer_dir = executable_dir.join("RobloxPlayerInstaller.app");
         fs::remove_dir_all(roblox_installer_dir).map_err(|e| e.to_string())?;
