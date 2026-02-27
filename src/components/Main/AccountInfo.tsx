@@ -51,10 +51,9 @@ export default function AccountInfo({ profile, state }: Props) {
             store.updateState(event.payload);
             if (
                 event.payload.client &&
-                [
-                    CLIENT_NAME_HYDROGEN,
-                    CLIENT_NAME_RONIX,
-                ].includes(event.payload.client)
+                [CLIENT_NAME_HYDROGEN, CLIENT_NAME_RONIX].includes(
+                    event.payload.client,
+                )
             )
                 setContext(event.payload.profileId);
         });
@@ -263,10 +262,7 @@ export default function AccountInfo({ profile, state }: Props) {
             ) {
                 statusText += ` ${state.port}`;
             } else if (
-                [
-                    CLIENT_NAME_HYDROGEN,
-                    CLIENT_NAME_RONIX,
-                ].includes(state.client)
+                [CLIENT_NAME_HYDROGEN, CLIENT_NAME_RONIX].includes(state.client)
             ) {
                 if (state.profileId === context.id) {
                     statusText += ` ${STATUS_ATTACHED}`;
@@ -355,10 +351,9 @@ export default function AccountInfo({ profile, state }: Props) {
                     </div>
                     <div style={bottomContainerStyle}>
                         {state.client &&
-                            [
-                                CLIENT_NAME_HYDROGEN,
-                                CLIENT_NAME_RONIX,
-                            ].includes(state.client) &&
+                            [CLIENT_NAME_HYDROGEN, CLIENT_NAME_RONIX].includes(
+                                state.client,
+                            ) &&
                             state.connected &&
                             state.pid && (
                                 <SharedButton

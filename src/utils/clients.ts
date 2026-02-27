@@ -38,7 +38,8 @@ export async function launchClient(
             throw new Error(
                 "Keychain was not found. It seems like your profile is corrupted, please remove the profile and create it again.",
             );
-        else if (unlocked === 51) {} // Keychain cannot be unlocked, just proceed
+        else if (unlocked === 51) {
+        } // Keychain cannot be unlocked, just proceed
         else if (unlocked !== 0)
             throw new Error(`Could not unlock keychain with code ${unlocked}.`);
     }

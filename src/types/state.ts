@@ -1,8 +1,4 @@
-export type ClientName =
-    | "Vanilla"
-    | "MacSploit"
-    | "Hydrogen"
-    | "Ronix";
+export type ClientName = "Vanilla" | "MacSploit" | "Hydrogen" | "Ronix";
 
 export interface IState {
     profileId: string;

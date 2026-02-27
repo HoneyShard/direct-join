@@ -1,4 +1,4 @@
-export const COOKIE_PLACEHOLDER = ".ROBLOSECURITY" as const;
+export const COOKIE_PLACEHOLDER = "Click Import to load your cookie!" as const;
 
 export const DEFAULT_PROFILE_NAME = "Profile: Nexus42" as const;
 
