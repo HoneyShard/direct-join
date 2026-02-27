@@ -3,6 +3,9 @@ import { useFilterStore, useStore } from "../../store";
 import type { IProfile } from "../../types/profile";
 import Account from "./Account";
 import AccountManager from "./AccountManager";
+import { UI_STYLES } from "../../constants";
+import Text from "../Shared/Text";
+import InformationIcon from "../icons/InformationIcon";
 
 interface Props {
     children?: React.ReactNode;
@@ -17,6 +20,15 @@ export default function AccountList(_props: Props) {
         flexDirection: "column",
         width: "100%",
         gap: 8,
+    };
+
+    const tutorialStyle: React.CSSProperties = {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        padding: 48,
     };
 
     const containerStyle: React.CSSProperties = {
@@ -47,41 +59,56 @@ export default function AccountList(_props: Props) {
     return (
         <div style={style}>
             <AccountManager />
-            <div style={containerStyle}>
-                {store.profiles
-                    .sort(filters[filter.filter])
-                    .map((profile, i) => (
-                        <motion.div
-                            key={JSON.stringify(profile)}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.05 }}
-                            style={{ width: "100%", minHeight: 64 }}
-                        >
-                            <Account
-                                active={store.selectedIndex === i}
-                                profile={profile}
-                                state={
-                                    store.states.find(
-                                        (state) =>
-                                            state.profileId === profile.id,
-                                    ) ?? {
-                                        profileId: profile.id,
-                                        connected: false,
-                                        pid: null,
-                                        client: null,
-                                        port: null,
+            {store.profiles.length === 0 ? (
+                <div style={tutorialStyle}>
+                    <InformationIcon />
+                    <Text variant="title">
+                        Welcome to Raptor Manager, new user!
+                    </Text>
+                    <Text>
+                        Start by adding your account by clicking the + button in
+                        top left.
+                    </Text>
+                </div>
+            ) : (
+                <div style={containerStyle}>
+                    {store.profiles
+                        .sort(filters[filter.filter])
+                        .map((profile, i) => (
+                            <motion.div
+                                key={JSON.stringify(profile)}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.05 }}
+                                style={{ width: "100%", minHeight: 64 }}
+                            >
+                                <Account
+                                    active={store.selectedIndex === i}
+                                    profile={profile}
+                                    state={
+                                        store.states.find(
+                                            (state) =>
+                                                state.profileId === profile.id,
+                                        ) ?? {
+                                            profileId: profile.id,
+                                            connected: false,
+                                            pid: null,
+                                            client: null,
+                                            port: null,
+                                        }
                                     }
-                                }
-                                onClick={() =>
-                                    store.setSelectedIndex(
-                                        store.selectedIndex === i ? null : i,
-                                    )
-                                }
-                            />
-                        </motion.div>
-                    ))}
-            </div>
+                                    onClick={() =>
+                                        store.setSelectedIndex(
+                                            store.selectedIndex === i
+                                                ? null
+                                                : i,
+                                        )
+                                    }
+                                />
+                            </motion.div>
+                        ))}
+                </div>
+            )}
         </div>
     );
 }

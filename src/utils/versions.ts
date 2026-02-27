@@ -32,14 +32,13 @@ export async function fetchClientVersions() {
         (err) => new Error(err),
     );
 
-    const [roblox, macsploit, hydrogen, opiumware, delta] =
-        await Promise.all([
-            robloxPromise,
-            macsploitPromise,
-            hydrogenPromise,
-            opiumwarePromise,
-            deltaPromise,
-        ]);
+    const [roblox, macsploit, hydrogen, opiumware, delta] = await Promise.all([
+        robloxPromise,
+        macsploitPromise,
+        hydrogenPromise,
+        opiumwarePromise,
+        deltaPromise,
+    ]);
 
     if (roblox instanceof Error) {
         showErrorModal("Failed to fetch Roblox version", roblox.message);

@@ -245,10 +245,7 @@ export default function Account({ active, profile, state, onClick }: Props) {
             ) {
                 statusText += ` ${state.port}`;
             } else if (
-                [
-                    CLIENT_NAME_HYDROGEN,
-                    CLIENT_NAME_RONIX,
-                ].includes(state.client)
+                [CLIENT_NAME_HYDROGEN, CLIENT_NAME_RONIX].includes(state.client)
             ) {
                 if (state.profileId === context.id) {
                     statusText += " Attached";
