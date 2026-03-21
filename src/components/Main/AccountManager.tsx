@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { CLIENT_NAME_VANILLA, FILTERS } from "../../constants";
-import { useConfigStore, useFilterStore, useModalStore, useStore } from "../../store";
+import {
+    useConfigStore,
+    useFilterStore,
+    useModalStore,
+    useStore,
+} from "../../store";
 import { launchClient, removeProfile, stopClient } from "../../utils";
 import FunnelIcon from "../icons/FunnelIcon";
 import MinusIcon from "../icons/MinusIcon";
@@ -52,7 +57,10 @@ export default function AccountManager(_props: Props) {
         });
     }
 
-    async function onLaunch(client: string | null = config.config.client, profile: IProfile | null = null) {
+    async function onLaunch(
+        client: string | null = config.config.client,
+        profile: IProfile | null = null,
+    ) {
         if (!client) {
             if (config.config.clients.length === 0) {
                 const id = crypto.randomUUID();
@@ -85,7 +93,8 @@ export default function AccountManager(_props: Props) {
                         },
                         ...config.config.clients.map((c) => ({
                             text: c.name,
-                            onClick: () => modal.remove(id) ?? onLaunch(c.name, profile),
+                            onClick: () =>
+                                modal.remove(id) ?? onLaunch(c.name, profile),
                         })),
                     ],
                 });
@@ -101,7 +110,8 @@ export default function AccountManager(_props: Props) {
             return;
         }
 
-        const state = store.states.find(s => s.profileId === profile.id) ?? null;
+        const state =
+            store.states.find((s) => s.profileId === profile.id) ?? null;
         if (!state) return;
 
         // launching the instance
@@ -144,7 +154,8 @@ export default function AccountManager(_props: Props) {
             return;
         }
 
-        const state = store.states.find(s => s.profileId === profile.id) ?? null;
+        const state =
+            store.states.find((s) => s.profileId === profile.id) ?? null;
         if (!state) return;
 
         if (state.connected) {
@@ -212,13 +223,26 @@ export default function AccountManager(_props: Props) {
                     />
                     <ManagerButton
                         icon={<LaunchIcon />}
-                        onClick={() => onLaunch(null, store.selectedIndex !== null ? store.profiles[store.selectedIndex] : null)}
+                        onClick={() =>
+                            onLaunch(
+                                null,
+                                store.selectedIndex !== null
+                                    ? store.profiles[store.selectedIndex]
+                                    : null,
+                            )
+                        }
                     >
                         {store.selectedIndex === null ? "Launch All" : "Launch"}
                     </ManagerButton>
                     <ManagerButton
                         icon={<StopIcon />}
-                        onClick={() => onStop(store.selectedIndex !== null ? store.profiles[store.selectedIndex] : null)}
+                        onClick={() =>
+                            onStop(
+                                store.selectedIndex !== null
+                                    ? store.profiles[store.selectedIndex]
+                                    : null,
+                            )
+                        }
                     >
                         {store.selectedIndex === null ? "Stop All" : "Stop"}
                     </ManagerButton>
