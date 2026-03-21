@@ -1,3 +1,5 @@
+import { oklch } from "../../utils/colors";
+
 interface Props {
     displayName: string;
     username: string;
@@ -12,7 +14,7 @@ export default function BigUsername({ displayName, username }: Props) {
     };
 
     const displayNameStyle: React.CSSProperties = {
-        color: "oklch(0.9 0 0)",
+        color: oklch(0.9, 0, 0),
         fontFamily: "TASA Explorer",
         fontSize: 16,
         fontWeight: 700,
@@ -21,7 +23,7 @@ export default function BigUsername({ displayName, username }: Props) {
     };
 
     const usernameStyle: React.CSSProperties = {
-        color: "oklch(0.9 0 0)",
+        color: oklch(0.9, 0, 0),
         fontFamily: "TASA Explorer",
         fontSize: 12,
         fontWeight: 500,

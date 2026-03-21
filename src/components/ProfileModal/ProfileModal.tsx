@@ -15,6 +15,7 @@ import SharedButton from "../Shared/Button";
 import Input from "../Shared/Input";
 import Text from "./Text";
 import Title from "./Title";
+import { oklch } from "../../utils/colors";
 
 interface Props {
     destruct: () => void;
@@ -169,7 +170,7 @@ export default function ProfileModal({ destruct }: Props) {
         flexDirection: "column",
         minWidth: 240,
         padding: 12,
-        backgroundColor: "oklch(0.24 0 0)",
+        backgroundColor: oklch(0.24, 0, 0),
         border: "1px solid #FFFFFF20",
         borderRadius: 12,
         zIndex: 1,

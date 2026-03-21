@@ -1,10 +1,12 @@
+import { oklch } from "../utils/colors";
+
 export const UI_STYLES = {
     COLORS: {
-        BACKGROUND_DARK: "oklch(0.24 0 0)",
-        BACKGROUND_MEDIUM: "oklch(0.22 0 0)",
-        BACKGROUND_LIGHT: "oklch(0.4 0 0)",
-        TEXT_BRIGHT: "oklch(0.9 0 0)",
-        TEXT_MEDIUM: "oklch(0.6 0 0)",
+        BACKGROUND_DARK: oklch(0.24, 0, 0),
+        BACKGROUND_MEDIUM: oklch(0.22, 0, 0),
+        BACKGROUND_LIGHT: oklch(0.4, 0, 0),
+        TEXT_BRIGHT: oklch(0.9, 0, 0),
+        TEXT_MEDIUM: oklch(0.6, 0, 0),
         BORDER: "#FFFFFF20",
         RED: "red",
         GREEN: "green",
@@ -43,33 +45,33 @@ export const BUTTON_COLOR_THEMES = {
         text: UI_STYLES.COLORS.TEXT_BRIGHT,
     },
     modal: {
-        black: "oklch(0.22 0 0)",
+        black: oklch(0.22, 0, 0),
     } as const,
     header: {
         background: (active: boolean) =>
-            active ? UI_STYLES.COLORS.BACKGROUND_DARK : "oklch(0.24 0 0)",
+            active ? UI_STYLES.COLORS.BACKGROUND_DARK : oklch(0.24, 0, 0),
         text: UI_STYLES.COLORS.TEXT_BRIGHT,
     },
     main: {
-        red: "oklch(0.68 0.22 30)",
-        green: "oklch(0.68 0.22 150)",
-        darkgreen: "oklch(0.58 0.22 150)",
+        red: oklch(0.68, 0.22, 30),
+        green: oklch(0.68, 0.22, 150),
+        darkgreen: oklch(0.58, 0.22, 150),
     } as const,
     settings: {
-        red: "oklch(0.64 0.18 30)",
-        green: "oklch(0.64 0.18 160)",
-        blue: "oklch(0.64 0.18 260)",
+        red: oklch(0.64, 0.18, 30),
+        green: oklch(0.64, 0.18, 160),
+        blue: oklch(0.64, 0.18, 260),
     } as const,
     status: {
-        red: "oklch(0.64 0.18 30)",
-        green: "oklch(0.64 0.18 150)",
-        orange: "oklch(0.64 0.18 60)",
+        red: oklch(0.64, 0.18, 30),
+        green: oklch(0.64, 0.18, 150),
+        orange: oklch(0.64, 0.18, 60),
     } as const,
 };
 
 export const STATUS_COLORS = {
-    red: "oklch(0.64 0.18 30)",
-    green: "oklch(0.64 0.18 150)",
-    orange: "oklch(0.64 0.18 60)",
-    gray: "oklch(0.4 0 0)",
+    red: oklch(0.64, 0.18, 30),
+    green: oklch(0.64, 0.18, 150),
+    orange: oklch(0.64, 0.18, 60),
+    gray: oklch(0.4, 0, 0),
 } as const;

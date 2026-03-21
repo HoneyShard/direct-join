@@ -1,3 +1,5 @@
+import { oklch } from "../../utils/colors";
+
 interface Props {
     displayName: string;
     username: string;
@@ -6,7 +8,7 @@ interface Props {
 
 export default function Username({ displayName, username }: Props) {
     const style: React.CSSProperties = {
-        color: "oklch(0.9 0 0)",
+        color: oklch(0.9, 0, 0),
         fontFamily: "TASA Explorer",
         fontSize: 16,
         fontWeight: 700,
