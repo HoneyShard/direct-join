@@ -203,7 +203,7 @@ export default function AccountInfo({ profile, state }: Props) {
         flexDirection: "column",
         width: 260,
         padding: 10,
-        backgroundColor: "#1B1B1B",
+        backgroundColor: "oklch(0.22 0 0)",
         border: "1px solid #FFFFFF20",
         borderRadius: 12,
         justifyContent: "space-between",
@@ -296,7 +296,7 @@ export default function AccountInfo({ profile, state }: Props) {
                             {profile.note && (
                                 <span
                                     style={{
-                                        color: "#DEDEDECC",
+                                        color: "oklch(0.9 0 0 / 0.8)",
                                         fontFamily: "TASA Explorer",
                                         fontSize: 11,
                                         textAlign: "center",
@@ -317,7 +317,7 @@ export default function AccountInfo({ profile, state }: Props) {
                             >
                                 <span
                                     style={{
-                                        color: "#9E9E9E",
+                                        color: "oklch(0.7 0 0)",
                                         fontFamily: "TASA Explorer",
                                         fontSize: 10,
                                         fontWeight: 500,
@@ -328,7 +328,7 @@ export default function AccountInfo({ profile, state }: Props) {
                                 {profile.lastPlayedAt > 0 && (
                                     <span
                                         style={{
-                                            color: "#9E9E9E",
+                                            color: "oklch(0.7 0 0)",
                                             fontFamily: "TASA Explorer",
                                             fontSize: 10,
                                             fontWeight: 500,

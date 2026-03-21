@@ -6,7 +6,7 @@ export default function SettingsIcon(_props: Props) {
     const style: React.CSSProperties = {
         width: 20,
         height: 20,
-        color: "#DEDEDE",
+        color: "oklch(0.9 0 0)",
     };
 
     return (
