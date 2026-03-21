@@ -1,12 +1,14 @@
 interface Props {
     children?: React.ReactNode;
+    size?: number;
+    color?: React.CSSProperties["color"];
 }
 
-export default function LaunchIcon(_props: Props) {
+export default function LaunchIcon(props: Props) {
     const style: React.CSSProperties = {
-        width: 24,
-        height: 24,
-        color: "white",
+        width: props.size ?? 18,
+        height: props.size ?? 18,
+        color: props.color ?? "oklch(0.9 0 0)",
     };
 
     return (

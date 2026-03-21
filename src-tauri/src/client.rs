@@ -4,6 +4,7 @@ use std::fmt::Debug;
 use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
+use std::os::unix::process::ExitStatusExt;
 use std::process::{Command, Stdio};
 use std::thread;
 use tauri::{AppHandle, Emitter, Manager};
@@ -234,7 +235,12 @@ pub async fn launch_client(
     let app_handle_wait = app_handle.clone();
     thread::spawn(move || match child.wait() {
         Ok(status) => {
-            let exit_code = status.code().unwrap_or(-1);
+            let exit_code;
+            if let Some(code) = status.code() {
+                exit_code = code;
+            } else {
+                exit_code = status.signal().unwrap_or(-1);
+            }
             let _ = app_handle_wait.emit_to(
                 "main",
                 "client_close",
@@ -293,7 +299,7 @@ pub async fn launch_sandboxed_client(
     let app_handle_wait = app_handle.clone();
     thread::spawn(move || match child.wait() {
         Ok(status) => {
-            let exit_code = status.code().unwrap_or(-1);
+            let exit_code = status.signal().unwrap_or(-1);
             let _ = app_handle_wait.emit_to(
                 "main",
                 "client_close",

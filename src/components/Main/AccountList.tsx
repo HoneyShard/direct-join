@@ -75,13 +75,14 @@ export default function AccountList(_props: Props) {
                         .sort(filters[filter.filter])
                         .map((profile, i) => (
                             <motion.div
-                                key={JSON.stringify(profile)}
+                                key={profile.id}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 }}
                                 style={{ width: "100%", minHeight: 64 }}
                             >
                                 <Account
+                                    key={JSON.stringify(profile)}
                                     active={store.selectedIndex === i}
                                     profile={profile}
                                     state={

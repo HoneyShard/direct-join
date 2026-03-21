@@ -39,7 +39,7 @@ export default function Header(_props: Props) {
             modal.add({
                 id,
                 title: "No client installation found",
-                text: "Please install a client from the settings tab before selecting one!",
+                text: "Please install a client from the settings tab (top right) before selecting one!",
                 buttons: [
                     {
                         text: "Okay",

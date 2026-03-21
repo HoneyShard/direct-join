@@ -1,7 +1,6 @@
 use crate::binarycookies::{BinaryCookies, Cookie, Page};
 use std::fs::{self, File};
 use std::io::Write;
-use std::thread;
 use std::time::{Duration, SystemTime};
 use tauri::{AppHandle, Emitter, Manager, WebviewWindowBuilder};
 
@@ -82,41 +81,58 @@ pub async fn write_sandboxed_cookies(
 
 #[tauri::command]
 pub fn import_cookies(app_handle: AppHandle) -> Result<(), String> {
-    let webview = WebviewWindowBuilder::new(
+    let app_handle_navigation = app_handle.clone();
+    let _ = WebviewWindowBuilder::new(
         &app_handle,
         "login",
         tauri::WebviewUrl::App("https://www.roblox.com/login".into()),
     )
-    .title("Roblox")
-    .inner_size(640.0, 720.0)
-    .resizable(false)
-    .build()
-    .map_err(|e| e.to_string())?;
-
-    webview
-        .clear_all_browsing_data()
-        .map_err(|e| e.to_string())?;
-
-    let app_handle_poll = app_handle.clone();
-    thread::spawn(move || {
-        let roblox_url = tauri::Url::parse("https://roblox.com/").unwrap();
-        loop {
-            match webview.cookies_for_url(roblox_url.clone()) {
-                Ok(cookies) => {
-                    for cookie in cookies {
-                        if cookie.name() == ".ROBLOSECURITY" {
-                            let _ =
-                                app_handle_poll.emit_to("main", "import_cookies", cookie.value());
-                            let _ = webview.close();
-                            break;
+        .title("Roblox")
+        .inner_size(500.0, 764.0)
+        .resizable(false)
+        .minimizable(false)
+        .incognito(true)
+        .on_navigation(move |url| {
+            if url.path() == "/" || url.path() == "/home" {
+                if let Some(window) = app_handle_navigation.get_webview_window("login") {
+                    if let Ok(cookies) = window.cookies_for_url(tauri::Url::parse("https://roblox.com/").unwrap()) {
+                        for cookie in cookies {
+                            if cookie.name() == ".ROBLOSECURITY" {
+                                let _ = window.close();
+                                let _ = app_handle_navigation.emit_to("main", "import_cookies", cookie.value());
+                                return false;
+                            }
                         }
                     }
-                    thread::sleep(Duration::from_secs(1));
                 }
-                Err(_) => break,
             }
-        }
-    });
+            return true;
+        })
+        .initialization_script("
+            // Remove decorations
+            window.addEventListener('DOMContentLoaded', () => {
+                const header = document.getElementById('header');
+                if (header) header.remove();
+                const footer = document.getElementById('footer-container');
+                if (footer) footer.remove();
+                const content = document.getElementById('content');
+                if (content) content.style.paddingTop = '0';
+            });
+
+            // Fix for annoying keychain popups when there is a login
+            // https://github.com/TheRouletteBoi/altman/blob/main/src/ui/webview/webview_macos.mm#L155
+            Object.defineProperty(window, 'crypto', {
+                get: () => ({
+                    subtle: null,
+                    getRandomValues: (arr) => {
+                        for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256);
+                        return arr;
+                    }
+                })
+            });
+        ")
+        .build()
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
