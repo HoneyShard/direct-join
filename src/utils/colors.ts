@@ -36,9 +36,9 @@ export function oklch(L: number, C: number, h: number, alpha: number = 1) {
     b2 = toSRGB(b2);
 
     return "#" + [
-        Math.round(Math.min(Math.max(0, r), 1) * 255),
-        Math.round(Math.min(Math.max(0, g), 1) * 255),
-        Math.round(Math.min(Math.max(0, b2), 1) * 255),
-        Math.round(Math.min(Math.max(0, alpha), 1) * 255)
+        Math.round(Math.min(Math.max(0, r), 1) * 255).toString(16).padStart(2, "0"),
+        Math.round(Math.min(Math.max(0, g), 1) * 255).toString(16).padStart(2, "0"),
+        Math.round(Math.min(Math.max(0, b2), 1) * 255).toString(16).padStart(2, "0"),
+        Math.round(Math.min(Math.max(0, alpha), 1) * 255).toString(16).padStart(2, "0")
     ].join("");
 }
