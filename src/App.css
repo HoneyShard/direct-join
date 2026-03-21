@@ -39,7 +39,7 @@ span {
     -webkit-user-select: none;
 }
 
-@supports (color: oklch(0.2 0 0)) {
+@supports (background-color: oklch(0.2 0 0)) {
     :root {
         background-color: oklch(0.2 0 0);
     }
