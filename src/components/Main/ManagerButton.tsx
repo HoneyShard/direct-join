@@ -21,7 +21,7 @@ export default function ManagerButton({
         height: 26,
         paddingLeft: children ? 6 : 0,
         paddingRight: children ? 6 : 0,
-        backgroundColor: "oklch(0.22 0 0)",
+        backgroundColor: "#1B1B1B",
         border: "1px solid #FFFFFF20",
         borderRadius: 8,
         alignItems: "center",
@@ -30,7 +30,7 @@ export default function ManagerButton({
     };
 
     const textStyle: React.CSSProperties = {
-        color: "oklch(0.9 0 0)",
+        color: "#DEDEDE",
         fontFamily: "TASA Explorer",
         fontSize: 14,
         fontWeight: 700,

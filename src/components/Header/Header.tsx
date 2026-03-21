@@ -82,7 +82,7 @@ export default function Header(_props: Props) {
         minHeight: 46,
         paddingLeft: 8,
         paddingRight: 8,
-        backgroundColor: "oklch(0.22 0 0)",
+        backgroundColor: "#1B1B1B",
         border: "1px solid #FFFFFF20",
         borderRadius: 12,
         justifyContent: "space-between",
@@ -107,7 +107,7 @@ export default function Header(_props: Props) {
     };
 
     const titleTextStyle: React.CSSProperties = {
-        color: "oklch(0.9 0 0)",
+        color: "#DEDEDE",
         fontFamily: "TASA Explorer",
         fontSize: 20,
         fontWeight: 700,

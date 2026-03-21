@@ -204,7 +204,7 @@ export default function Account({ active, profile, state, onClick }: Props) {
         width: "100%",
         height: 64,
         gap: 10,
-        backgroundColor: active ? "oklch(0.28 0 0)" : "inherit",
+        backgroundColor: active ? "#292929" : "inherit",
         padding: 10,
         borderRadius: 12,
         justifyContent: "space-between",

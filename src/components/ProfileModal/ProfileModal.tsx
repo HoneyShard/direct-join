@@ -169,7 +169,7 @@ export default function ProfileModal({ destruct }: Props) {
         flexDirection: "column",
         minWidth: 240,
         padding: 12,
-        backgroundColor: "oklch(0.24 0 0)",
+        backgroundColor: "#1F1F1F",
         border: "1px solid #FFFFFF20",
         borderRadius: 12,
         zIndex: 1,

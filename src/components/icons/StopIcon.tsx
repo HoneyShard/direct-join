@@ -8,7 +8,7 @@ export default function StopIcon(props: Props) {
     const style: React.CSSProperties = {
         width: props.size ?? 18,
         height: props.size ?? 18,
-        color: props.color ?? "oklch(0.9 0 0)",
+        color: props.color ?? "#DEDEDE",
     };
 
     return (

@@ -1,10 +1,10 @@
 export const UI_STYLES = {
     COLORS: {
-        BACKGROUND_DARK: "oklch(0.24 0 0)",
-        BACKGROUND_MEDIUM: "oklch(0.22 0 0)",
-        BACKGROUND_LIGHT: "oklch(0.4 0 0)",
-        TEXT_BRIGHT: "oklch(0.9 0 0)",
-        TEXT_MEDIUM: "oklch(0.6 0 0)",
+        BACKGROUND_DARK: "#1F1F1F",
+        BACKGROUND_MEDIUM: "#1B1B1B",
+        BACKGROUND_LIGHT: "#484848",
+        TEXT_BRIGHT: "#DEDEDE",
+        TEXT_MEDIUM: "#808080",
         BORDER: "#FFFFFF20",
         RED: "red",
         GREEN: "green",
@@ -43,33 +43,33 @@ export const BUTTON_COLOR_THEMES = {
         text: UI_STYLES.COLORS.TEXT_BRIGHT,
     },
     modal: {
-        black: "oklch(0.22 0 0)",
+        black: "#1B1B1B",
     } as const,
     header: {
         background: (active: boolean) =>
-            active ? UI_STYLES.COLORS.BACKGROUND_DARK : "oklch(0.24 0 0)",
+            active ? UI_STYLES.COLORS.BACKGROUND_DARK : "#1F1F1F",
         text: UI_STYLES.COLORS.TEXT_BRIGHT,
     },
     main: {
-        red: "oklch(0.68 0.22 30)",
-        green: "oklch(0.68 0.22 150)",
-        darkgreen: "oklch(0.58 0.22 150)",
+        red: "#FF4F3B",
+        green: "#0B4",
+        darkgreen: "#009733",
     } as const,
     settings: {
-        red: "oklch(0.64 0.18 30)",
-        green: "oklch(0.64 0.18 160)",
-        blue: "oklch(0.64 0.18 260)",
+        red: "#E55745",
+        green: "#00AA67",
+        blue: "#4588F7",
     } as const,
     status: {
-        red: "oklch(0.64 0.18 30)",
-        green: "oklch(0.64 0.18 150)",
-        orange: "oklch(0.64 0.18 60)",
+        red: "#E55745",
+        green: "#00A94B",
+        orange: "#D46C00",
     } as const,
 };
 
 export const STATUS_COLORS = {
-    red: "oklch(0.64 0.18 30)",
-    green: "oklch(0.64 0.18 150)",
-    orange: "oklch(0.64 0.18 60)",
-    gray: "oklch(0.4 0 0)",
+    red: "#E55745",
+    green: "#00A94B",
+    orange: "#D46C00",
+    gray: "#484848",
 } as const;

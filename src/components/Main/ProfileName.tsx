@@ -4,7 +4,7 @@ interface Props {
 
 export default function ProfileName({ children }: Props) {
     const style: React.CSSProperties = {
-        color: "oklch(0.6 0 0)",
+        color: "#808080",
         fontFamily: "TASA Explorer",
         fontSize: 9,
         fontWeight: 500,
