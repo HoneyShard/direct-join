@@ -108,14 +108,29 @@ pub fn import_cookies(app_handle: AppHandle) -> Result<(), String> {
             }
             return true;
         })
-        .initialization_script("window.addEventListener('DOMContentLoaded', () => {
-            const header = document.getElementById('header');
-            if (header) header.remove();
-            const footer = document.getElementById('footer-container');
-            if (footer) footer.remove();
-            const content = document.getElementById('content');
-            if (content) content.style.paddingTop = '0';
-        });")
+        .initialization_script("
+            // Remove decorations
+            window.addEventListener('DOMContentLoaded', () => {
+                const header = document.getElementById('header');
+                if (header) header.remove();
+                const footer = document.getElementById('footer-container');
+                if (footer) footer.remove();
+                const content = document.getElementById('content');
+                if (content) content.style.paddingTop = '0';
+            });
+
+            // Fix for annoying keychain popups when there is a login
+            // https://github.com/TheRouletteBoi/altman/blob/main/src/ui/webview/webview_macos.mm#L155
+            Object.defineProperty(window, 'crypto', {
+                get: () => ({
+                    subtle: null,
+                    getRandomValues: (arr) => {
+                        for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256);
+                        return arr;
+                    }
+                })
+            });
+        ")
         .build()
         .map_err(|e| e.to_string())?;
 
