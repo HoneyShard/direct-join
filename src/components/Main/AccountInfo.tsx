@@ -1,5 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
     CLIENT_NAME_HYDROGEN,
     CLIENT_NAME_MACSPLOIT,
@@ -173,7 +173,7 @@ export default function AccountInfo({ profile, state }: Props) {
                 client,
                 profile.id,
                 profile.cookie,
-            ).catch((err) => err);
+            ).catch((err: Error) => err);
             if (launched instanceof Error) {
                 const id = crypto.randomUUID();
                 modal.add({
@@ -191,10 +191,10 @@ export default function AccountInfo({ profile, state }: Props) {
             }
 
             if (client === CLIENT_NAME_VANILLA) {
-                (launched as IState).connected = true;
-                (launched as IState).client = CLIENT_NAME_VANILLA;
+                launched.connected = true;
+                launched.client = CLIENT_NAME_VANILLA;
             }
-            store.updateState(launched as IState);
+            store.updateState(launched);
         }
     }
 
@@ -231,11 +231,11 @@ export default function AccountInfo({ profile, state }: Props) {
           ? "darkgreen"
           : "green";
     const launchIcon = state?.connected ? (
-        <StopIcon />
+        <StopIcon size={24} color={"white"} />
     ) : state?.pid ? (
         <LoadingIcon />
     ) : (
-        <LaunchIcon />
+        <LaunchIcon size={24} color={"white"} />
     );
     const launchText = state?.connected
         ? STATUS_STOP

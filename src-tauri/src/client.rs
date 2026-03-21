@@ -235,7 +235,12 @@ pub async fn launch_client(
     let app_handle_wait = app_handle.clone();
     thread::spawn(move || match child.wait() {
         Ok(status) => {
-            let exit_code = status.signal().unwrap_or(-1);
+            let exit_code;
+            if let Some(code) = status.code() {
+                exit_code = code;
+            } else {
+                exit_code = status.signal().unwrap_or(-1);
+            }
             let _ = app_handle_wait.emit_to(
                 "main",
                 "client_close",

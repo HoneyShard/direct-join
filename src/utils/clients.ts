@@ -9,6 +9,7 @@ import {
 } from "../constants";
 import { useConfigStore, useStore, useVersionStore } from "../store";
 import { updateProfile } from "./profiles";
+import { IState } from "../types";
 
 /**
  * Launches a client for a profile with the given cookie.
@@ -90,22 +91,15 @@ export async function launchClient(
     }).catch((err) => new Error(err));
     if (modified instanceof Error) throw modified;
 
-    interface State {
-        profile_id: string;
-        connected: boolean;
-        pid: number;
-        client: string | null;
-        port: number | null;
-    }
-    let launched: State | Error;
+    let launched: IState | Error;
     if (client !== CLIENT_NAME_DELTA) {
-        launched = await invoke<State>("launch_client", {
+        launched = await invoke<IState>("launch_client", {
             client,
             profileId,
         }).catch((err) => new Error(err));
         if (launched instanceof Error) throw launched;
     } else {
-        launched = await invoke<State>("launch_sandboxed_client", {
+        launched = await invoke<IState>("launch_sandboxed_client", {
             client,
             profileId,
         }).catch((err) => new Error(err));
