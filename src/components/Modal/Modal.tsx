@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import React from "react";
 import Text from "./Text";
 import Title from "./Title";
+import { oklch } from "../../utils/colors";
 
 interface Props {
     title: string;
@@ -39,7 +40,7 @@ export default function Modal({
         flexDirection: "column",
         minWidth: 240,
         padding: 12,
-        backgroundColor: "oklch(0.24 0 0)",
+        backgroundColor: oklch(0.24, 0, 0),
         border: "1px solid #FFFFFF20",
         borderRadius: 12,
         zIndex: 2,
@@ -100,7 +101,7 @@ export default function Modal({
                             style={{
                                 width: "80%",
                                 height: 6,
-                                backgroundColor: "oklch(0.15 0 0)",
+                                backgroundColor: oklch(0.15, 0, 0),
                                 borderRadius: 3,
                                 overflow: "hidden",
                             }}
@@ -109,7 +110,7 @@ export default function Modal({
                                 style={{
                                     width: `${Math.min(100, Math.max(0, progress ?? 0))}%`,
                                     height: "100%",
-                                    backgroundColor: "oklch(0.74 0.14 254)",
+                                    backgroundColor: oklch(0.74, 0.14, 254),
                                     transition: "width 0.3s ease",
                                 }}
                             />

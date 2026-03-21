@@ -15,6 +15,7 @@ import Modal, { ModalButton } from "../Modal";
 import Button from "../Shared/Button";
 import Status from "../Shared/Status";
 import TrafficLight from "./TrafficLight";
+import { oklch } from "../../utils/colors";
 
 interface Props {
     children?: React.ReactNode;
@@ -82,7 +83,7 @@ export default function Header(_props: Props) {
         minHeight: 46,
         paddingLeft: 8,
         paddingRight: 8,
-        backgroundColor: "oklch(0.22 0 0)",
+        backgroundColor: oklch(0.22, 0, 0),
         border: "1px solid #FFFFFF20",
         borderRadius: 12,
         justifyContent: "space-between",
@@ -107,7 +108,7 @@ export default function Header(_props: Props) {
     };
 
     const titleTextStyle: React.CSSProperties = {
-        color: "oklch(0.9 0 0)",
+        color: oklch(0.9, 0, 0),
         fontFamily: "TASA Explorer",
         fontSize: 20,
         fontWeight: 700,

@@ -114,8 +114,8 @@ export default function AccountManager(_props: Props) {
             store.states.find((s) => s.profileId === profile.id) ?? null;
         if (!state) return;
 
-        // launching the instance
-        if (!state.connected && state.pid) return;
+        // launching the instance or already launched
+        if (state.connected || state.pid) return;
 
         const launched = await launchClient(
             client,
@@ -146,7 +146,7 @@ export default function AccountManager(_props: Props) {
     }
 
     async function onStop(profile: IProfile | null = null) {
-        // launch all
+        // stop all
         if (!profile) {
             for (const profile of store.profiles) {
                 await onStop(profile);

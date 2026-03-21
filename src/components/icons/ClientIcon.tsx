@@ -1,3 +1,5 @@
+import { oklch } from "../../utils/colors";
+
 interface Props {
     children?: React.ReactNode;
 }
@@ -6,7 +8,7 @@ export default function ClientIcon(_props: Props) {
     const style: React.CSSProperties = {
         width: 20,
         height: 20,
-        color: "oklch(0.9 0 0)",
+        color: oklch(0.9, 0, 0),
     };
 
     return (

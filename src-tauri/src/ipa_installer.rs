@@ -13,6 +13,44 @@ pub struct InstallProgress {
     pub progress: Option<Vec<u64>>,
 }
 
+pub fn check_xcode_cli() -> Result<bool, String> {
+    let mut child = Command::new("/usr/bin/xcode-select")
+        .arg("-p")
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    let status = child.wait().map_err(|e| e.to_string())?;
+    if let Some(code) = status.code() {
+        if code == 0 { // installed
+            return Ok(true);
+        } else if code == 2 { // not installed
+            return Ok(false);
+        }
+        return Err(format!("Failed to check XCode CLI installation with code {}.", code));
+    }
+
+    Err("Failed to check XCode CLI installation.".into())
+}
+
+pub fn install_xcode_cli() -> Result<bool, String> {
+    let mut child = Command::new("/usr/bin/xcode-select")
+        .arg("--install")
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    let status = child.wait().map_err(|e| e.to_string())?;
+    if let Some(code) = status.code() {
+        if code == 0 { // installer opened
+            return Ok(true);
+        } else if code == 1 { // already installed
+            return Ok(false);
+        }
+        return Err(format!("Failed to install XCode CLI with code {}.", code));
+    }
+
+    Err("Failed to install XCode CLI.".into())
+}
+
 pub async fn download_package(
     app_handle: &AppHandle,
     url: &str,
@@ -241,6 +279,20 @@ pub async fn install_ipa(
     let arch = std::env::consts::ARCH;
     if arch != "aarch64" {
         return Err("You cannot install this client. .ipa installations are only available on Apple Silicon.".into());
+    }
+
+    match check_xcode_cli() {
+        Ok(installed) => {
+            if !installed {
+                let success = install_xcode_cli().map_err(|e| e.to_string())?;
+                if success {
+                    return Err("XCode Command Line Tools are not installed. The installer has been opened, please install it and try again.".into());
+                } else {
+                    return Err("XCode Command Line Tools are already installed, but are not detected. Please try again.".into());
+                }
+            }
+        }
+        Err(e) => return Err(e)
     }
 
     if client == "Delta" {
