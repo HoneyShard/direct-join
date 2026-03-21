@@ -27,7 +27,7 @@ span {
 
 :root {
     height: 100%;
-    background-color: oklch(0.2 0 0);
+    background-color: #161616;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -37,6 +37,12 @@ span {
 
     user-select: none;
     -webkit-user-select: none;
+}
+
+@supports (color: oklch(0.2 0 0)) {
+    :root {
+        background-color: oklch(0.2 0 0);
+    }
 }
 
 #root {
