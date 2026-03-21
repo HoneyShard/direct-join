@@ -44,7 +44,6 @@ export default function AccountInfo({ profile, state }: Props) {
     const modal = useModalStore();
     const config = useConfigStore();
     const context = useContextStore();
-    const [forceQuit, setForceQuit] = useState(false);
 
     useEffect(() => {
         const unlistenOpen = listen<IState>("client_open", (event) => {
@@ -67,7 +66,7 @@ export default function AccountInfo({ profile, state }: Props) {
                 port: null,
             });
 
-            if (!forceQuit && event.payload.exitCode !== 0) {
+            if (event.payload.exitCode !== 0 && event.payload.exitCode !== 9) {
                 const profile = store.profiles.find(
                     (profile) => profile.id === event.payload.profileId,
                 );
@@ -77,7 +76,7 @@ export default function AccountInfo({ profile, state }: Props) {
                     title:
                         profile?.name ??
                         `Profile: ${event.payload.profileId} ${PROFILE_CRASHED_SUFFIX}`,
-                    text: `Your client has crashed.\nThis is usually an issue with the client, please contact the corresponding developers.`,
+                    text: `Your client has crashed with exit code ${event.payload.exitCode}.\nThis is usually an issue with the client, please contact the corresponding developers.`,
                     buttons: [
                         {
                             text: "Okay",
@@ -86,14 +85,13 @@ export default function AccountInfo({ profile, state }: Props) {
                     ],
                 });
             }
-            setForceQuit(false);
         });
 
         return () => {
             unlistenOpen.then((unlisten) => unlisten());
             unlistenClose.then((unlisten) => unlisten());
         };
-    }, [forceQuit, store.updateState, store.profiles, modal.add, modal.remove]);
+    }, [store.updateState, store.profiles, modal.add, modal.remove]);
 
     async function launch(client = config.config.client) {
         if (!profile || !state) return;
@@ -102,8 +100,6 @@ export default function AccountInfo({ profile, state }: Props) {
         if (!state.connected && state.pid) return;
 
         if (state.connected) {
-            setForceQuit(true);
-
             if (state.pid === null) {
                 const id = crypto.randomUUID();
                 modal.add({
@@ -143,7 +139,7 @@ export default function AccountInfo({ profile, state }: Props) {
                 modal.add({
                     id,
                     title: "No client installation found",
-                    text: "Please install a client from the settings tab before selecting one!",
+                    text: "Please install a client from the settings tab (top right) before selecting one!",
                     buttons: [
                         {
                             text: "Okay",
@@ -172,8 +168,6 @@ export default function AccountInfo({ profile, state }: Props) {
                 });
                 return;
             }
-
-            setForceQuit(false);
 
             const launched = await launchClient(
                 client,
