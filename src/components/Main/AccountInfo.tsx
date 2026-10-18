@@ -1,30 +1,18 @@
 import { listen } from "@tauri-apps/api/event";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
-    CLIENT_NAME_HYDROGEN,
     CLIENT_NAME_MACSPLOIT,
     CLIENT_NAME_OPIUMWARE,
-    CLIENT_NAME_RONIX,
-    CLIENT_NAME_VANILLA,
     PROFILE_CRASHED_SUFFIX,
-    STATUS_ATTACH,
-    STATUS_ATTACHED,
     STATUS_LAUNCH,
     STATUS_LAUNCHING,
     STATUS_OFFLINE,
     STATUS_STOP,
 } from "../../constants";
-import {
-    useConfigStore,
-    useContextStore,
-    useModalStore,
-    useStore,
-} from "../../store";
+import { useConfigStore, useModalStore, useStore } from "../../store";
 import type { IProfile } from "../../types/profile";
 import type { ICloseState, IState } from "../../types/state";
-import { launchClient, stopClient } from "../../utils";
-import { setContext } from "../../utils/context";
-import ContextIcon from "../icons/ContextIcon";
+import { startProfile, stopClient, updateProfile } from "../../utils";
 import LaunchIcon from "../icons/LaunchIcon";
 import LoadingIcon from "../icons/LoadingIcon";
 import StopIcon from "../icons/StopIcon";
@@ -32,6 +20,7 @@ import SharedButton from "../Shared/Button";
 import Status from "../Shared/Status";
 import BigUsername from "./BigUsername";
 import Thumbnail from "./Thumbnail";
+import { showErrorModal } from "../../utils/modal";
 import { oklch } from "../../utils/colors";
 
 interface Props {
@@ -44,18 +33,32 @@ export default function AccountInfo({ profile, state }: Props) {
     const store = useStore();
     const modal = useModalStore();
     const config = useConfigStore();
-    const context = useContextStore();
+
+    const [placeId, setPlaceId] = useState(profile?.placeId?.toString() ?? "");
+
+    // Keep the field in sync when the place id is changed from the relaunch settings
+    useEffect(() => {
+        setPlaceId(profile?.placeId?.toString() ?? "");
+    }, [profile?.placeId]);
+
+    /** Saves the place id field to the profile. Returns false if it is invalid. */
+    async function commitPlaceId() {
+        if (!profile) return true;
+        const text = placeId.trim();
+        if (text && !/^\d+$/.test(text)) {
+            showErrorModal("Invalid Place ID", "Place ID must be a number.");
+            return false;
+        }
+        const next = text ? Number(text) : null;
+        if (next !== (profile.placeId ?? null)) {
+            await updateProfile({ ...profile, placeId: next });
+        }
+        return true;
+    }
 
     useEffect(() => {
         const unlistenOpen = listen<IState>("client_open", (event) => {
             store.updateState(event.payload);
-            if (
-                event.payload.client &&
-                [CLIENT_NAME_HYDROGEN, CLIENT_NAME_RONIX].includes(
-                    event.payload.client,
-                )
-            )
-                setContext(event.payload.profileId);
         });
 
         const unlistenClose = listen<ICloseState>("client_close", (event) => {
@@ -67,10 +70,14 @@ export default function AccountInfo({ profile, state }: Props) {
                 port: null,
             });
 
-            if (event.payload.exitCode !== 0 && event.payload.exitCode !== 9) {
-                const profile = store.profiles.find(
-                    (profile) => profile.id === event.payload.profileId,
-                );
+            const profile = store.profiles.find(
+                (profile) => profile.id === event.payload.profileId,
+            );
+            if (
+                event.payload.exitCode !== 0 &&
+                event.payload.exitCode !== 9 &&
+                !profile?.autoRelaunch?.onCrash
+            ) {
                 const id = crypto.randomUUID();
                 modal.add({
                     id,
@@ -170,17 +177,17 @@ export default function AccountInfo({ profile, state }: Props) {
                 return;
             }
 
-            const launched = await launchClient(
-                client,
-                profile.id,
-                profile.cookie,
-            ).catch((err: Error) => err);
-            if (launched instanceof Error) {
+            if (!(await commitPlaceId())) return;
+
+            const started = await startProfile(profile.id, client).catch(
+                (err: Error) => err,
+            );
+            if (started instanceof Error) {
                 const id = crypto.randomUUID();
                 modal.add({
                     id,
                     title: "Failed to launch client",
-                    text: launched.message,
+                    text: started.message,
                     buttons: [
                         {
                             text: "Okay",
@@ -188,14 +195,7 @@ export default function AccountInfo({ profile, state }: Props) {
                         },
                     ],
                 });
-                return;
             }
-
-            if (client === CLIENT_NAME_VANILLA) {
-                launched.connected = true;
-                launched.client = CLIENT_NAME_VANILLA;
-            }
-            store.updateState(launched);
         }
     }
 
@@ -224,6 +224,20 @@ export default function AccountInfo({ profile, state }: Props) {
         flexDirection: "column",
         gap: 8,
         alignItems: "center",
+    };
+
+    const placeIdStyle: React.CSSProperties = {
+        width: "100%",
+        boxSizing: "border-box",
+        padding: "6px 10px",
+        backgroundColor: oklch(0.28, 0, 0),
+        color: oklch(0.95, 0, 0),
+        border: 0,
+        borderRadius: 8,
+        outline: 0,
+        fontFamily: "TASA Explorer",
+        fontSize: 12,
+        textAlign: "center",
     };
 
     const launchColor = state?.connected
@@ -256,12 +270,6 @@ export default function AccountInfo({ profile, state }: Props) {
                 )
             ) {
                 statusText += ` ${state.port}`;
-            } else if (
-                [CLIENT_NAME_HYDROGEN, CLIENT_NAME_RONIX].includes(state.client)
-            ) {
-                if (state.profileId === context.id) {
-                    statusText += ` ${STATUS_ATTACHED}`;
-                }
             }
         }
         statusText += ` | PID ${state.pid}`;
@@ -345,28 +353,15 @@ export default function AccountInfo({ profile, state }: Props) {
                         </div>
                     </div>
                     <div style={bottomContainerStyle}>
-                        {state.client &&
-                            [CLIENT_NAME_HYDROGEN, CLIENT_NAME_RONIX].includes(
-                                state.client,
-                            ) &&
-                            state.connected &&
-                            state.pid && (
-                                <SharedButton
-                                    variant="main"
-                                    color={
-                                        context.id === profile.id
-                                            ? "darkgreen"
-                                            : "green"
-                                    }
-                                    cursor={context.id !== profile.id}
-                                    icon={<ContextIcon />}
-                                    onClick={() => setContext(profile.id)}
-                                >
-                                    {context.id === profile.id
-                                        ? STATUS_ATTACHED
-                                        : STATUS_ATTACH}
-                                </SharedButton>
-                            )}
+                        <input
+                            style={placeIdStyle}
+                            placeholder="Place ID (direct join)"
+                            value={placeId}
+                            disabled={!!state.pid}
+                            onChange={(e) => setPlaceId(e.target.value)}
+                            onBlur={commitPlaceId}
+                            onKeyDown={(e) => e.key === "Enter" && launch()}
+                        />
                         <SharedButton
                             variant="main"
                             color={launchColor}

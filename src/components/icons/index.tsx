@@ -1,6 +1,6 @@
 export { default as ClientIcon } from "./ClientIcon";
 export { default as CloseIcon } from "./CloseIcon";
-export { default as ContextIcon } from "./ContextIcon";
+export { default as FileIcon } from "./FileIcon";
 export { default as FunnelIcon } from "./FunnelIcon";
 export { default as LaunchIcon } from "./LaunchIcon";
 export { default as LoadingIcon } from "./LoadingIcon";

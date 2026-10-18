@@ -34,6 +34,8 @@ export default function AccountList(_props: Props) {
         display: "flex",
         flexDirection: "column",
         overflowY: "scroll",
+        flex: 1,
+        minHeight: 0,
     };
 
     const filters: ((a: IProfile, b: IProfile) => number)[] = [

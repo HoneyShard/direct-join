@@ -1,5 +1,4 @@
 use serde::Serialize;
-use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::{Emitter, Listener, Manager};
 use tokio::sync::Mutex;
@@ -9,13 +8,12 @@ mod client;
 mod config;
 mod cookies;
 mod decompiler;
-mod hydrobridge;
 mod installer;
-mod ipa_installer;
+mod macsploit;
 mod roblox;
 mod updater;
 mod versions;
-mod macsploit;
+mod workspace;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Message {
@@ -32,40 +30,38 @@ pub fn run() {
             config::read_config,
             config::write_config,
             config::update_decompiler,
-            config::update_hydrobridge,
             config::read_profiles,
             config::write_profiles,
             config::create_environment,
-            config::create_sandboxed_environment,
             config::remove_environment,
             config::open_profile_folder,
-            config::open_container_folder,
             config::open_client_folder,
-            config::copy_hydrogen_key,
             roblox::get_roblox_profile,
             roblox::get_roblox_thumbnail,
+            roblox::get_roblox_presence,
             client::create_keychain,
             client::unlock_keychain,
             client::modify_bundle_identifier,
             client::launch_client,
-            client::launch_sandboxed_client,
             client::stop_client,
             cookies::write_cookies,
-            cookies::write_sandboxed_cookies,
             cookies::import_cookies,
             versions::get_roblox_version,
             versions::get_macsploit_version,
-            versions::get_hydrogen_version,
             versions::get_opiumware_version,
-            versions::get_delta_version,
             installer::install_client,
             installer::remove_client,
             installer::clean_cache,
             installer::clean_leftover_cache,
-            ipa_installer::install_ipa,
             updater::update,
             macsploit::macsploit_read_settings,
             macsploit::macsploit_write_settings,
+            workspace::workspace_sync,
+            workspace::workspace_backup_create,
+            workspace::workspace_backup_list,
+            workspace::workspace_backup_restore,
+            workspace::workspace_backup_delete,
+            workspace::workspace_open_backups,
         ])
         .setup(|app| {
             let app_handle = app.handle().clone();
@@ -86,27 +82,6 @@ pub fn run() {
                         let _ = decompiler_app_handle.emit_to("main", "message", Message {
                             title: "Failed to run decompiler server".into(),
                             description: format!("{}\nPlease free port 6767 and restart Manager to use decompiler.", err)
-                        });
-                    });
-                }
-            });
-
-            // Hydrobridge Init
-            let hydrobridge_state = hydrobridge::AppState {
-                queue: Arc::new(Mutex::new(HashMap::new())),
-                id: Arc::new(Mutex::new("".to_string()))
-            };
-
-            app.manage(hydrobridge_state.clone());
-
-            let hydrobridge_app_handle = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                if let Err(err) = hydrobridge::serve(hydrobridge_state).await {
-                    let window = hydrobridge_app_handle.get_webview_window("main").unwrap();
-                    window.once("ready", move |_| {
-                        let _ = hydrobridge_app_handle.emit_to("main", "message", Message {
-                            title: "Failed to run Hydrobridge".into(),
-                            description: format!("{}\nPlease close open instances and restart Manager to use Hydrobridge.", err)
                         });
                     });
                 }

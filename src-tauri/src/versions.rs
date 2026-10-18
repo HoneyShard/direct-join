@@ -80,57 +80,6 @@ pub async fn get_macsploit_version(app_handle: AppHandle) -> Result<MacsploitVer
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct HydrogenVersion {
-    pub global: GlobalVersion,
-    pub windows: PlatformVersion,
-    pub macos: PlatformVersion,
-    pub ios: PlatformVersion,
-    pub android: PlatformVersion,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct GlobalVersion {
-    pub globallogs: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PlatformVersion {
-    pub product: Option<String>,
-    pub exploit_version: Option<String>,
-    pub roblox_version: Option<String>,
-    pub changelog: Option<String>,
-}
-
-#[tauri::command]
-pub async fn get_hydrogen_version(app_handle: AppHandle) -> Result<HydrogenVersion, String> {
-    let client = Client::new();
-    let url = format!("https://hydrogen.lat/updates.json");
-    let response = client
-        .get(url)
-        .header(
-            "User-Agent",
-            format!(
-                "RaptorManager/{}",
-                app_handle.package_info().version.to_string()
-            ),
-        )
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
-
-    let status = response.status();
-    if !status.is_success() {
-        return Err(status.to_string());
-    }
-
-    let body = response
-        .json::<HydrogenVersion>()
-        .await
-        .map_err(|e| e.to_string())?;
-    Ok(body)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 #[allow(non_snake_case)]
 pub struct OpiumwareVersion {
     pub CurrentVersion: String,
@@ -142,9 +91,8 @@ pub struct OpiumwareVersion {
 #[tauri::command]
 pub async fn get_opiumware_version(app_handle: AppHandle) -> Result<OpiumwareVersion, String> {
     let client = Client::new();
-    let url = format!(
-        "https://raw.githubusercontent.com/norbyv1/OpiumwareInstall/main/version.json"
-    );
+    let url =
+        format!("https://raw.githubusercontent.com/norbyv1/OpiumwareInstall/main/version.json");
     let response = client
         .get(url)
         .header(
@@ -168,50 +116,4 @@ pub async fn get_opiumware_version(app_handle: AppHandle) -> Result<OpiumwareVer
         .await
         .map_err(|e| e.to_string())?;
     Ok(body)
-}
-
-#[tauri::command]
-pub async fn get_delta_version(app_handle: AppHandle) -> Result<String, String> {
-    let client = Client::new();
-    let url = format!(
-        "https://gloopup.net/Delta/ios/"
-    );
-    let response = client
-        .get(url)
-        .header(
-            "User-Agent",
-            format!(
-                "RaptorManager/{}",
-                app_handle.package_info().version.to_string()
-            ),
-        )
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
-
-    let status = response.status();
-    if !status.is_success() {
-        return Err(status.to_string());
-    }
-
-    let body = response
-        .text()
-        .await
-        .map_err(|e| e.to_string())?;
-
-    if !body.contains("https://cdn.gloopup.net/file/Delta-") {
-        return Err("Delta server has returned an invalid response.".into());
-    }
-
-    let parts = body.split("https://cdn.gloopup.net/file/Delta-");
-    if let Some(part) = parts.last() {
-        let mut version_parts = part.split(".ipa");
-        if let Some(version) = version_parts.next() {
-            Ok(version.to_string())
-        } else {
-            Err("Delta server has returned an invalid response.".into())
-        }
-    } else {
-        Err("Delta server has returned an invalid response.".into())
-    }
 }

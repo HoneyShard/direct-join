@@ -3,26 +3,19 @@ import { listen } from "@tauri-apps/api/event";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import {
-    CLIENT_NAME_DELTA,
-    CLIENT_NAME_HYDROGEN,
     CLIENT_NAME_MACSPLOIT,
     CLIENT_NAME_OPIUMWARE,
-    CLIENT_NAME_RONIX,
     CLIENT_NAME_VANILLA,
     DECOMPILER_LIST,
-    URL_DELTA,
-    URL_HYDROGEN,
     URL_OPIUMWARE,
     URL_RAPTOR_FUN,
     URL_ROBLOX_HOME,
-    URL_RONIX_STUDIOS,
 } from "../../constants";
 import { useConfigStore, useModalStore, useVersionStore } from "../../store";
 import type { IInstallProgress } from "../../types/install";
 import { installClient, removeClient, writeConfig } from "../../utils";
 import Client from "./Client";
 import Option from "./Option";
-import { installIpa } from "../../utils/clients";
 
 interface Props {
     children?: React.ReactNode;
@@ -58,18 +51,6 @@ export default function Settings(_props: Props) {
                         });
                         break;
                     }
-                    case "download-ipa": {
-                        if (!event.payload.progress) return;
-                        const downloaded = event.payload.progress[0];
-                        const total = event.payload.progress[1];
-                        const percent = Math.round((downloaded / total) * 100);
-
-                        modal.update(installModalId.current, {
-                            progressText: `Downloading .ipa: ${Math.round(downloaded / 1024 / 1024)} MB / ${Math.round(total / 1024 / 1024)} MB`,
-                            progress: percent,
-                        });
-                        break;
-                    }
                     case "download-insert-dylib": {
                         modal.update(installModalId.current, {
                             progressText: "Downloading insert_dylib...",
@@ -87,13 +68,6 @@ export default function Settings(_props: Props) {
                     case "install-roblox": {
                         modal.update(installModalId.current, {
                             progressText: "Installing Roblox client...",
-                            progress: 35,
-                        });
-                        break;
-                    }
-                    case "install-ipa": {
-                        modal.update(installModalId.current, {
-                            progressText: "Installing .ipa...",
                             progress: 35,
                         });
                         break;
@@ -123,13 +97,6 @@ export default function Settings(_props: Props) {
                         modal.update(installModalId.current, {
                             progressText: "Applying codesign...",
                             progress: 90,
-                        });
-                        break;
-                    }
-                    case "convert-ipa": {
-                        modal.update(installModalId.current, {
-                            progressText: "Converting .ipa into .app...",
-                            progress: 80,
                         });
                         break;
                     }
@@ -173,56 +140,28 @@ export default function Settings(_props: Props) {
             buttons: [],
         });
 
-        if (client !== CLIENT_NAME_DELTA) {
-            // .app
-            const installed = await installClient(client).catch(
-                (err) => new Error(err),
-            );
-            if (installed instanceof Error) {
-                const _id = crypto.randomUUID();
-                modal.add({
-                    id: _id,
-                    title: `Failed to install ${client}`,
-                    text: installed.message,
-                    buttons: [
-                        {
-                            text: "Okay",
-                            onClick: () => {
-                                modal.remove(id);
-                                modal.remove(_id);
-                                installModalId.current = null;
-                            },
+        const installed = await installClient(client).catch(
+            (err) => new Error(err),
+        );
+        if (installed instanceof Error) {
+            const _id = crypto.randomUUID();
+            modal.add({
+                id: _id,
+                title: `Failed to install ${client}`,
+                text: installed.message,
+                buttons: [
+                    {
+                        text: "Okay",
+                        onClick: () => {
+                            modal.remove(id);
+                            modal.remove(_id);
+                            installModalId.current = null;
                         },
-                    ],
-                });
-                installModalId.current = null;
-                return;
-            }
-        } else {
-            // .ipa (Mac Catalyst)
-            const installed = await installIpa(client).catch(
-                (err) => new Error(err),
-            );
-            if (installed instanceof Error) {
-                const _id = crypto.randomUUID();
-                modal.add({
-                    id: _id,
-                    title: `Failed to install ${client}`,
-                    text: installed.message,
-                    buttons: [
-                        {
-                            text: "Okay",
-                            onClick: () => {
-                                modal.remove(id);
-                                modal.remove(_id);
-                                installModalId.current = null;
-                            },
-                        },
-                    ],
-                });
-                installModalId.current = null;
-                return;
-            }
+                    },
+                ],
+            });
+            installModalId.current = null;
+            return;
         }
 
         modal.update(id, {
@@ -234,11 +173,7 @@ export default function Settings(_props: Props) {
         modal.add({
             id: _id,
             title: `Installed ${client}`,
-            text:
-                `${client} is now installed on your device!` +
-                (client === CLIENT_NAME_DELTA
-                    ? "\nBecause this client is an iPad app, controls could be broken."
-                    : ""),
+            text: `${client} is now installed on your device!`,
             buttons: [
                 {
                     text: "Okay",
@@ -416,17 +351,8 @@ export default function Settings(_props: Props) {
     const macsploitInstallation = config.config.clients.find(
         (client) => client.name === CLIENT_NAME_MACSPLOIT,
     );
-    const hydrogenInstallation = config.config.clients.find(
-        (client) => client.name === CLIENT_NAME_HYDROGEN,
-    );
-    const ronixInstallation = config.config.clients.find(
-        (client) => client.name === CLIENT_NAME_RONIX,
-    );
     const opiumwareInstallation = config.config.clients.find(
         (client) => client.name === CLIENT_NAME_OPIUMWARE,
-    );
-    const deltaInstallation = config.config.clients.find(
-        (client) => client.name === CLIENT_NAME_DELTA,
     );
 
     return (
@@ -491,59 +417,6 @@ export default function Settings(_props: Props) {
                     transition={{ delay: 3 * 0.05 }}
                     style={{ flex: 1 }}
                 >
-                    <Client
-                        installation={hydrogenInstallation}
-                        version={version.hydrogen}
-                        thumbnail="/hydrogen.png"
-                        onInstall={onInstall}
-                        onRemove={onRemove}
-                        href={URL_HYDROGEN}
-                    >
-                        Hydrogen
-                    </Client>
-                </motion.div>
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 4 * 0.05 }}
-                    style={{ flex: 1 }}
-                >
-                    <Client
-                        installation={ronixInstallation}
-                        version={version.ronix}
-                        thumbnail="/ronix.png"
-                        onInstall={onInstall}
-                        onRemove={onRemove}
-                        href={URL_RONIX_STUDIOS}
-                    >
-                        Ronix
-                    </Client>
-                </motion.div>
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 5 * 0.05 }}
-                    style={{ flex: 1 }}
-                >
-                    <Client
-                        installation={deltaInstallation}
-                        version={version.delta}
-                        thumbnail="/delta.png"
-                        onInstall={onInstall}
-                        onRemove={onRemove}
-                        href={URL_DELTA}
-                    >
-                        Delta iOS
-                    </Client>
-                </motion.div>
-            </div>
-            <div style={containerStyle}>
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 6 * 0.05 }}
-                    style={{ flex: 1 }}
-                >
                     <Option title="Installation Cache" onClick={cleanCache}>
                         Clear
                     </Option>
@@ -551,7 +424,7 @@ export default function Settings(_props: Props) {
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 7 * 0.05 }}
+                    transition={{ delay: 4 * 0.05 }}
                     style={{ flex: 1 }}
                 >
                     <Option
@@ -564,7 +437,7 @@ export default function Settings(_props: Props) {
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 8 * 0.05 }}
+                    transition={{ delay: 5 * 0.05 }}
                     style={{ flex: 1 }}
                 >
                     <Option title="Decompiler" onClick={switchDecompiler}>

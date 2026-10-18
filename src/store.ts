@@ -4,7 +4,6 @@ import type { IModal } from "./types/modal";
 import type { IProfile } from "./types/profile";
 import type { IState } from "./types/state";
 import type {
-    IHydrogenVersion,
     IMacsploitVersion,
     IOpiumwareVersion,
     IRobloxVersion,
@@ -94,16 +93,10 @@ export const useConfigStore = create<ConfigState>()((set) => ({
 export interface VersionState {
     roblox: IRobloxVersion;
     macsploit: IMacsploitVersion;
-    hydrogen: IHydrogenVersion;
-    ronix: IHydrogenVersion;
     opiumware: IOpiumwareVersion;
-    delta: string;
     setRoblox: (version: IRobloxVersion) => void;
     setMacsploit: (version: IMacsploitVersion) => void;
-    setHydrogen: (version: IHydrogenVersion) => void;
-    setRonix: (version: IHydrogenVersion) => void;
     setOpiumware: (version: IOpiumwareVersion) => void;
-    setDelta: (version: string) => void;
 }
 
 export const useVersionStore = create<VersionState>()((set) => ({
@@ -120,37 +113,15 @@ export const useVersionStore = create<VersionState>()((set) => ({
         channel: "",
         changelog: "",
     },
-    hydrogen: {
-        global: {
-            globallogs: "",
-        },
-        windows: {},
-        macos: {},
-        ios: {},
-        android: {},
-    },
-    ronix: {
-        global: {
-            globallogs: "",
-        },
-        windows: {},
-        macos: {},
-        ios: {},
-        android: {},
-    },
     opiumware: {
         CurrentVersion: "",
         SupportedRobloxVersion: "",
         Changelog: "",
         RequiredUpd: false,
     },
-    delta: "",
     setRoblox: (version) => set(() => ({ roblox: version })),
     setMacsploit: (version) => set(() => ({ macsploit: version })),
-    setHydrogen: (version) => set(() => ({ hydrogen: version })),
-    setRonix: (version) => set(() => ({ ronix: version })),
     setOpiumware: (version) => set(() => ({ opiumware: version })),
-    setDelta: (version) => set(() => ({ delta: version })),
 }));
 
 export interface TabState {
@@ -175,14 +146,4 @@ export const useFilterStore = create<FilterState>()((set) => ({
     filter: 0,
     filterCount: 10,
     setFilter: (filter) => set(() => ({ filter })),
-}));
-
-export interface ContextState {
-    id: string;
-    setId: (id: string) => void;
-}
-
-export const useContextStore = create<ContextState>()((set) => ({
-    id: "",
-    setId: (id) => set(() => ({ id })),
 }));

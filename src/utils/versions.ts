@@ -1,7 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useVersionStore } from "../store";
 import type {
-    IHydrogenVersion,
     IMacsploitVersion,
     IOpiumwareVersion,
     IRobloxVersion,
@@ -22,22 +21,14 @@ export async function fetchClientVersions() {
     const macsploitPromise = invoke<IMacsploitVersion>(
         "get_macsploit_version",
     ).catch((err) => new Error(err));
-    const hydrogenPromise = invoke<IHydrogenVersion>(
-        "get_hydrogen_version",
-    ).catch((err) => new Error(err));
     const opiumwarePromise = invoke<IOpiumwareVersion>(
         "get_opiumware_version",
     ).catch((err) => new Error(err));
-    const deltaPromise = invoke<string>("get_delta_version").catch(
-        (err) => new Error(err),
-    );
 
-    const [roblox, macsploit, hydrogen, opiumware, delta] = await Promise.all([
+    const [roblox, macsploit, opiumware] = await Promise.all([
         robloxPromise,
         macsploitPromise,
-        hydrogenPromise,
         opiumwarePromise,
-        deltaPromise,
     ]);
 
     if (roblox instanceof Error) {
@@ -52,24 +43,11 @@ export async function fetchClientVersions() {
     }
     version.setMacsploit(macsploit);
 
-    if (hydrogen instanceof Error) {
-        showErrorModal("Failed to fetch Hydrogen version", hydrogen.message);
-        return false;
-    }
-    version.setHydrogen(hydrogen);
-    version.setRonix(hydrogen); // theyre both the same lol
-
     if (opiumware instanceof Error) {
         showErrorModal("Failed to fetch Opiumware version", opiumware.message);
         return false;
     }
     version.setOpiumware(opiumware);
-
-    if (delta instanceof Error) {
-        showErrorModal("Failed to fetch Delta version", delta.message);
-        return false;
-    }
-    version.setDelta(delta);
 
     return true;
 }

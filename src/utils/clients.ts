@@ -1,15 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
 import {
-    CLIENT_NAME_DELTA,
-    CLIENT_NAME_HYDROGEN,
     CLIENT_NAME_MACSPLOIT,
     CLIENT_NAME_OPIUMWARE,
-    CLIENT_NAME_RONIX,
     CLIENT_NAME_VANILLA,
 } from "../constants";
 import { useConfigStore, useStore, useVersionStore } from "../store";
 import { updateProfile } from "./profiles";
 import { IState } from "../types";
+import { noteLaunch } from "./relaunch";
 
 /**
  * Launches a client for a profile with the given cookie.
@@ -29,82 +27,45 @@ export async function launchClient(
     const profile = store.profiles.find((p) => p.id === profileId);
     if (!profile) throw new Error("Profile not found. Please try again.");
 
-    if (client !== CLIENT_NAME_DELTA) {
-        const unlocked = await invoke<number>("unlock_keychain", {
-            profileId,
-        }).catch((err: string) => new Error(err));
-        if (unlocked instanceof Error) throw unlocked;
+    const unlocked = await invoke<number>("unlock_keychain", {
+        profileId,
+    }).catch((err: string) => new Error(err));
+    if (unlocked instanceof Error) throw unlocked;
 
-        if (unlocked === 50)
-            throw new Error(
-                "Keychain was not found. It seems like your profile is corrupted, please remove the profile and create it again.",
-            );
-        else if (unlocked === 51) {
-        } // Keychain cannot be unlocked, just proceed
-        else if (unlocked !== 0)
-            throw new Error(`Could not unlock keychain with code ${unlocked}.`);
-    }
+    if (unlocked === 50)
+        throw new Error(
+            "Keychain was not found. It seems like your profile is corrupted, please remove the profile and create it again.",
+        );
+    else if (unlocked === 51) {
+    } // Keychain cannot be unlocked, just proceed
+    else if (unlocked !== 0)
+        throw new Error(`Could not unlock keychain with code ${unlocked}.`);
 
-    if (client !== CLIENT_NAME_DELTA) {
-        const created = await invoke<null>("create_environment", {
-            id: profileId,
-        }).catch((err) => new Error(err));
-        if (created instanceof Error) throw created;
-    } else {
-        // Sandboxed (~/Library/Containers/{identifier})
-        const created = await invoke<null>("create_sandboxed_environment", {
-            id: profileId,
-        }).catch((err) => new Error(err));
-        if (created instanceof Error) throw created;
-    }
+    const created = await invoke<null>("create_environment", {
+        id: profileId,
+    }).catch((err) => new Error(err));
+    if (created instanceof Error) throw created;
 
-    if (client !== CLIENT_NAME_DELTA) {
-        const written = await invoke<null>("write_cookies", {
-            profileId,
-            cookie,
-        }).catch((err) => new Error(err));
-        if (written instanceof Error) throw written;
-    } else {
-        // Sandboxed (~/Library/Containers/{identifier}/Data/Library/Cookies/Cookies.binarycookies)
-        const written = await invoke<null>("write_sandboxed_cookies", {
-            profileId,
-            cookie,
-        }).catch((err) => new Error(err));
-        if (written instanceof Error) throw written;
-    }
+    const written = await invoke<null>("write_cookies", {
+        profileId,
+        cookie,
+    }).catch((err) => new Error(err));
+    if (written instanceof Error) throw written;
 
-    if ([CLIENT_NAME_HYDROGEN, CLIENT_NAME_RONIX].includes(client))
-        invoke("copy_hydrogen_key", {
-            client: client,
-            profiles: store.profiles
-                .filter((p) => p.id !== profileId)
-                .map((p) => p.id),
-            toId: profileId,
-        });
-
-    const entitlements =
-        '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>com.apple.security.app-sandbox</key><true/><key>com.apple.security.network.client</key><true/><key>com.apple.security.network.server</key><true/></dict></plist>';
     const modified = await invoke<null>("modify_bundle_identifier", {
         client,
         profileId,
-        entitlements: client === CLIENT_NAME_DELTA ? entitlements : null,
     }).catch((err) => new Error(err));
     if (modified instanceof Error) throw modified;
 
-    let launched: IState | Error;
-    if (client !== CLIENT_NAME_DELTA) {
-        launched = await invoke<IState>("launch_client", {
-            client,
-            profileId,
-        }).catch((err) => new Error(err));
-        if (launched instanceof Error) throw launched;
-    } else {
-        launched = await invoke<IState>("launch_sandboxed_client", {
-            client,
-            profileId,
-        }).catch((err) => new Error(err));
-        if (launched instanceof Error) throw launched;
-    }
+    const launched = await invoke<IState>("launch_client", {
+        client,
+        profileId,
+        cookie,
+        placeId: profile.placeId ?? null,
+        jobId: profile.jobId || null,
+    }).catch((err) => new Error(err));
+    if (launched instanceof Error) throw launched;
 
     const newProfile = {
         ...profile,
@@ -114,6 +75,28 @@ export async function launchClient(
     await updateProfile(newProfile);
 
     return launched;
+}
+
+/**
+ * Full launch flow for a profile: validates the setup, resolves the client,
+ * launches it and records the state in the store. Shared by the Launch button
+ * and the auto relaunch watchdog.
+ * @param profileId - The profile to launch
+ * @param client - The client name to launch
+ */
+export async function startProfile(profileId: string, client: string) {
+    const profile = useStore
+        .getState()
+        .profiles.find((p) => p.id === profileId);
+    if (!profile) throw new Error("Profile not found. Please try again.");
+
+    const launched = await launchClient(client, profile.id, profile.cookie);
+    if (client === CLIENT_NAME_VANILLA) {
+        launched.connected = true;
+        launched.client = CLIENT_NAME_VANILLA;
+    }
+    useStore.getState().updateState(launched);
+    noteLaunch(profile.id, client);
 }
 
 /**
@@ -151,24 +134,6 @@ export async function installClient(client: string) {
 
         clientVersion = version.macsploit.clientVersionUpload;
         dylibVersion = version.macsploit.relVersion;
-    } else if (client === CLIENT_NAME_HYDROGEN) {
-        if (
-            !version.hydrogen.macos.roblox_version ||
-            !version.hydrogen.macos.exploit_version
-        )
-            throw new Error("Hydrogen version is not fetched yet.");
-
-        clientVersion = version.hydrogen.macos.roblox_version;
-        dylibVersion = version.hydrogen.macos.exploit_version;
-    } else if (client === CLIENT_NAME_RONIX) {
-        if (
-            !version.ronix.macos.roblox_version ||
-            !version.ronix.macos.exploit_version
-        )
-            throw new Error("Ronix version is not fetched yet.");
-
-        clientVersion = version.ronix.macos.roblox_version;
-        dylibVersion = version.ronix.macos.exploit_version;
     } else if (client === CLIENT_NAME_OPIUMWARE) {
         if (
             !version.opiumware.SupportedRobloxVersion ||
@@ -225,44 +190,4 @@ export async function removeClient(client: string) {
     config.setConfig(newConfig);
 
     await import("./config").then(({ writeConfig }) => writeConfig(newConfig));
-}
-
-/**
- * Installs an .ipa by forcing mac catalyst and adds it to the configuration.
- * @param client - The client name to install
- */
-export async function installIpa(client: string) {
-    const version = useVersionStore.getState();
-
-    let ipaVersion = "";
-    if (client === CLIENT_NAME_DELTA) {
-        if (!version.delta)
-            throw new Error("Delta version is not fetched yet.");
-        ipaVersion = version.delta;
-    }
-
-    const installed = await invoke("install_ipa", {
-        client,
-        version: ipaVersion,
-    }).catch((err: string) => new Error(err));
-    if (installed instanceof Error) throw installed;
-
-    const config = useConfigStore.getState();
-    const newConfig = {
-        ...config.config,
-        clients: [
-            ...config.config.clients,
-            {
-                name: client,
-                version: ipaVersion,
-            },
-        ],
-    };
-
-    const written = await import("./config").then(({ writeConfig }) =>
-        writeConfig(newConfig),
-    );
-    if (written) config.setConfig(newConfig);
-
-    return;
 }

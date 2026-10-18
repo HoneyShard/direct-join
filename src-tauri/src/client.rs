@@ -1,12 +1,14 @@
 use regex::Regex;
 use serde::Serialize;
 use std::fmt::Debug;
-use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::os::unix::process::ExitStatusExt;
 use std::process::{Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::thread;
+use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager};
 
 #[tauri::command]
@@ -58,7 +60,6 @@ pub async fn modify_bundle_identifier(
     app_handle: AppHandle,
     client: String,
     profile_id: Option<String>,
-    entitlements: Option<String>,
 ) -> Result<(), String> {
     let app_data_dir = app_handle.path().app_data_dir().unwrap();
 
@@ -66,10 +67,7 @@ pub async fn modify_bundle_identifier(
     if !app_dir.exists() {
         return Err("Selected client is not installed.".into());
     }
-    let mut plist_dir = app_dir.join("Info.plist");
-    if entitlements.is_none() {
-        plist_dir = app_dir.join("Contents").join("Info.plist");
-    }
+    let plist_dir = app_dir.join("Contents").join("Info.plist");
 
     let mut file = File::open(&plist_dir).map_err(|e| e.to_string())?;
 
@@ -96,36 +94,7 @@ pub async fn modify_bundle_identifier(
     file.write_all(contents.as_bytes())
         .map_err(|e| e.to_string())?;
 
-    if let Some(info) = entitlements {
-        let entitlements_dir = app_data_dir.join("clients").join("Entitlements.plist");
-        fs::write(&entitlements_dir, info).map_err(|e| e.to_string())?;
-
-        let mut child = Command::new("/usr/bin/codesign")
-            .arg("--force")
-            .arg("--entitlements")
-            .arg(&entitlements_dir)
-            .arg("-s")
-            .arg("-")
-            .arg(&app_dir)
-            .spawn()
-            .map_err(|e| e.to_string())?;
-
-        let status = child.wait().map_err(|e| e.to_string())?;
-
-        fs::remove_file(&entitlements_dir).map_err(|e| e.to_string())?;
-
-        if let Some(code) = status.code() {
-            if code != 0 {
-                return Err(format!("Failed to codesign with code {}.", code));
-            }
-
-            Ok(())
-        } else {
-            Err("Failed to codesign with code -1.".into())
-        }
-    } else {
-        Ok(())
-    }
+    Ok(())
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -146,11 +115,31 @@ pub struct CloseState {
     pub exit_code: i32,
 }
 
+const OPIUMWARE_PORT_RANGE: std::ops::RangeInclusive<u16> = 8390..=8420;
+
+/// Finds the port Opiumware listens on by asking the OS which TCP ports the
+/// client process holds, instead of relying on its log output.
+fn opiumware_port(pid: u32) -> Option<u16> {
+    let output = Command::new("lsof")
+        .args(["-nP", "-a", "-iTCP", "-sTCP:LISTEN", "-Fn", "-p"])
+        .arg(pid.to_string())
+        .output()
+        .ok()?;
+    String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .filter_map(|line| line.strip_prefix('n'))
+        .filter_map(|name| name.rsplit(':').next()?.parse::<u16>().ok())
+        .find(|port| OPIUMWARE_PORT_RANGE.contains(port))
+}
+
 #[tauri::command]
 pub async fn launch_client(
     app_handle: AppHandle,
     client: String,
     profile_id: String,
+    cookie: String,
+    place_id: Option<u64>,
+    job_id: Option<String>,
 ) -> Result<State, String> {
     let app_data_dir = app_handle.path().app_data_dir().unwrap();
 
@@ -162,7 +151,22 @@ pub async fn launch_client(
 
     let profile_dir = app_data_dir.join("environments").join(&profile_id);
 
-    let mut child = Command::new(player_dir)
+    // With a place id the player is handed a roblox-player: URL and joins straight into the game
+    let join_url = match place_id {
+        Some(place_id) => Some(
+            crate::roblox::build_join_url(&app_handle, &cookie, place_id, job_id.as_deref())
+                .await?,
+        ),
+        None => None,
+    };
+
+    // The player reads `-protocolString <roblox-player: url>` from its arguments
+    let mut command = Command::new(player_dir);
+    if let Some(url) = join_url {
+        command.arg("-protocolString").arg(url);
+    }
+
+    let mut child = command
         .env("HOME", profile_dir)
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
@@ -170,6 +174,9 @@ pub async fn launch_client(
         .map_err(|e| e.to_string())?;
 
     let pid = child.id();
+    let exited = Arc::new(AtomicBool::new(false));
+
+    let is_opiumware = client == "Opiumware";
 
     let stdout = child.stdout.take().unwrap();
     let profile_id_stdout = profile_id.clone();
@@ -210,57 +217,70 @@ pub async fn launch_client(
                         port: Some(port),
                     },
                 );
-            } else if line.starts_with("\u{1b}[32m[ Communication ] Listening on port ") {
-                let port = line
-                    .replace("\u{1b}[32m[ Communication ] Listening on port ", "")
-                    .replace("...\u{1b}[0m", "")
-                    .parse::<u16>()
-                    .unwrap();
-                let _ = app_handle_stdout.emit_to(
-                    "main",
-                    "client_open",
-                    State {
-                        profile_id: profile_id_stdout.clone(),
-                        connected: true,
-                        pid: pid,
-                        client: Some("Opiumware".into()),
-                        port: Some(port),
-                    },
-                );
             }
         }
     });
 
+    if is_opiumware {
+        let profile_id_poll = profile_id.clone();
+        let app_handle_poll = app_handle.clone();
+        let exited_poll = exited.clone();
+        thread::spawn(move || {
+            while !exited_poll.load(Ordering::Relaxed) {
+                if let Some(port) = opiumware_port(pid) {
+                    let _ = app_handle_poll.emit_to(
+                        "main",
+                        "client_open",
+                        State {
+                            profile_id: profile_id_poll,
+                            connected: true,
+                            pid: pid,
+                            client: Some("Opiumware".into()),
+                            port: Some(port),
+                        },
+                    );
+                    return;
+                }
+                thread::sleep(Duration::from_millis(500));
+            }
+        });
+    }
+
     let profile_id_wait = profile_id.clone();
     let app_handle_wait = app_handle.clone();
-    thread::spawn(move || match child.wait() {
-        Ok(status) => {
-            let exit_code;
-            if let Some(code) = status.code() {
-                exit_code = code;
-            } else {
-                exit_code = status.signal().unwrap_or(-1);
+    let exited_wait = exited.clone();
+    thread::spawn(move || {
+        let result = child.wait();
+        exited_wait.store(true, Ordering::Relaxed);
+        match result {
+            Ok(status) => {
+                let exit_code;
+                if let Some(code) = status.code() {
+                    exit_code = code;
+                } else {
+                    exit_code = status.signal().unwrap_or(-1);
+                }
+                let _ = app_handle_wait.emit_to(
+                    "main",
+                    "client_close",
+                    CloseState {
+                        profile_id: profile_id_wait.clone(),
+                        pid: pid,
+                        exit_code: exit_code,
+                    },
+                );
             }
-            let _ = app_handle_wait.emit_to(
-                "main",
-                "client_close",
-                CloseState {
-                    profile_id: profile_id_wait.clone(),
-                    pid: pid,
-                    exit_code: exit_code,
-                },
-            );
-        }
-        Err(_) => {
-            let _ = app_handle_wait.emit_to(
-                "main",
-                "client_close",
-                CloseState {
-                    profile_id: profile_id_wait.clone(),
-                    pid: pid,
-                    exit_code: -2,
-                },
-            );
+            Err(_) => {
+                let _ = app_handle_wait.emit_to(
+                    "main",
+                    "client_close",
+                    CloseState {
+                        profile_id: profile_id_wait.clone(),
+                        pid: pid,
+                        exit_code: -2,
+                    },
+                );
+            }
         }
     });
 
@@ -269,65 +289,6 @@ pub async fn launch_client(
         connected: false,
         pid: pid,
         client: None,
-        port: None,
-    })
-}
-
-#[tauri::command]
-pub async fn launch_sandboxed_client(
-    app_handle: AppHandle,
-    client: String,
-    profile_id: String,
-) -> Result<State, String> {
-    let app_data_dir = app_handle.path().app_data_dir().unwrap();
-
-    let app_dir = app_data_dir.join("clients").join(client.clone() + ".app");
-    if !app_dir.exists() {
-        return Err("Selected client is not installed.".into());
-    }
-    let player_dir = app_dir.join("Roblox");
-
-    let mut child = Command::new(player_dir)
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .spawn()
-        .map_err(|e| e.to_string())?;
-
-    let pid = child.id();
-
-    let profile_id_wait = profile_id.clone();
-    let app_handle_wait = app_handle.clone();
-    thread::spawn(move || match child.wait() {
-        Ok(status) => {
-            let exit_code = status.signal().unwrap_or(-1);
-            let _ = app_handle_wait.emit_to(
-                "main",
-                "client_close",
-                CloseState {
-                    profile_id: profile_id_wait.clone(),
-                    pid: pid,
-                    exit_code: exit_code,
-                },
-            );
-        }
-        Err(_) => {
-            let _ = app_handle_wait.emit_to(
-                "main",
-                "client_close",
-                CloseState {
-                    profile_id: profile_id_wait.clone(),
-                    pid: pid,
-                    exit_code: -2,
-                },
-            );
-        }
-    });
-
-    Ok(State {
-        profile_id: profile_id,
-        connected: true,
-        pid: pid,
-        client: Some(client.clone()),
         port: None,
     })
 }

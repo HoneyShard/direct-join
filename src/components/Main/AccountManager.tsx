@@ -13,7 +13,8 @@ import PlusIcon from "../icons/PlusIcon";
 import ProfileModal from "../ProfileModal";
 import ManagerButton from "./ManagerButton";
 import { AnimatePresence } from "motion/react";
-import { LaunchIcon, StopIcon } from "../icons";
+import { FileIcon, LaunchIcon, StopIcon } from "../icons";
+import { openWorkspaceWindow } from "../../utils/workspace";
 import { IProfile, IState } from "../../types";
 
 interface Props {
@@ -202,6 +203,7 @@ export default function AccountManager(_props: Props) {
     const style: React.CSSProperties = {
         display: "flex",
         marginBottom: 6,
+        flexShrink: 0,
         justifyContent: "space-between",
     };
 
@@ -248,6 +250,10 @@ export default function AccountManager(_props: Props) {
                     </ManagerButton>
                 </div>
                 <div style={containerStyle}>
+                    <ManagerButton
+                        icon={<FileIcon />}
+                        onClick={() => openWorkspaceWindow()}
+                    />
                     <ManagerButton icon={<FunnelIcon />} onClick={onFilter}>
                         {FILTERS[filter.filter]}
                     </ManagerButton>

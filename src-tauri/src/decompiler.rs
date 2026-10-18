@@ -1,4 +1,9 @@
-use axum::{body::Bytes, extract::{Path, State}, routing::post, Router};
+use axum::{
+    body::Bytes,
+    extract::{Path, State},
+    routing::post,
+    Router,
+};
 use reqwest::Client;
 use std::{path::Component, sync::Arc};
 use tauri::{AppHandle, Manager};
@@ -88,12 +93,18 @@ pub async fn decompile_konstant(app_handle: AppHandle, bytecode: Bytes) -> Strin
     }
 }
 
-async fn getcustomasset(State(state): State<AppState>, Path(id): Path<String>, body: String) -> String {
+async fn getcustomasset(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    body: String,
+) -> String {
     let asset_name = body.replace("rbxasset://custom/", "");
 
     let app_data_dir = state.app_handle.path().app_data_dir().unwrap();
 
-    let asset_dir = app_data_dir.join("environments").join(&id)
+    let asset_dir = app_data_dir
+        .join("environments")
+        .join(&id)
         .join("Documents")
         .join("Macsploit Workspace")
         .join(&asset_name);
@@ -103,11 +114,15 @@ async fn getcustomasset(State(state): State<AppState>, Path(id): Path<String>, b
     }
 
     if !asset_dir.is_file() {
-        return format!("Asset '{}' does not exist in the specified directory.", &asset_name);
+        return format!(
+            "Asset '{}' does not exist in the specified directory.",
+            &asset_name
+        );
     }
 
     // only macsploit needs this fix
-    let client_content_dir = app_data_dir.join("clients")
+    let client_content_dir = app_data_dir
+        .join("clients")
         .join("MacSploit.app")
         .join("Contents")
         .join("Resources")
@@ -116,12 +131,18 @@ async fn getcustomasset(State(state): State<AppState>, Path(id): Path<String>, b
         .join("LivePackages")
         .join(&id);
 
-    if client_content_dir.components().any(|c| c == Component::ParentDir) {
+    if client_content_dir
+        .components()
+        .any(|c| c == Component::ParentDir)
+    {
         return format!("Profile '{}' attempted path traversal.", &id);
     }
 
     let client_asset_dir = client_content_dir.join(&asset_name);
-    if client_asset_dir.components().any(|c| c == Component::ParentDir) {
+    if client_asset_dir
+        .components()
+        .any(|c| c == Component::ParentDir)
+    {
         return format!("Asset '{}' attempted path traversal.", &asset_name);
     }
 

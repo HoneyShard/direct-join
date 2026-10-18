@@ -1,4 +1,4 @@
-export type ClientName = "Vanilla" | "MacSploit" | "Hydrogen" | "Ronix";
+export type ClientName = "Vanilla" | "MacSploit" | "Opiumware";
 
 export interface IState {
     profileId: string;

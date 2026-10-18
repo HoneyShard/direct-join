@@ -1,6 +1,5 @@
 import type { IClient } from "../../types/config";
 import type {
-    IHydrogenVersion,
     IMacsploitVersion,
     IOpiumwareVersion,
     IRobloxVersion,
@@ -8,10 +7,7 @@ import type {
 import {
     CLIENT_NAME_VANILLA,
     CLIENT_NAME_MACSPLOIT,
-    CLIENT_NAME_HYDROGEN,
-    CLIENT_NAME_RONIX,
     STATUS_NOT_INSTALLED,
-    CLIENT_NAME_DELTA,
     CLIENT_NAME_OPIUMWARE,
 } from "../../constants";
 import TrashIcon from "../icons/TrashIcon";
@@ -22,12 +18,7 @@ import Thumbnail from "./Thumbnail";
 
 interface Props {
     installation?: IClient;
-    version:
-        | IRobloxVersion
-        | IMacsploitVersion
-        | IHydrogenVersion
-        | IOpiumwareVersion
-        | string;
+    version: IRobloxVersion | IMacsploitVersion | IOpiumwareVersion;
     thumbnail: string;
     href?: string;
     onInstall: (client: string) => void;
@@ -44,8 +35,7 @@ export default function Client({
     onRemove,
     children,
 }: Props) {
-    const client =
-        children?.toString()?.replace(" iOS", "") ?? CLIENT_NAME_VANILLA;
+    const client = children?.toString() ?? CLIENT_NAME_VANILLA;
 
     const currentVersion = installation?.version ?? null;
     let latestVersion = null;
@@ -53,16 +43,8 @@ export default function Client({
         latestVersion = (version as IRobloxVersion).version;
     } else if (client === CLIENT_NAME_MACSPLOIT) {
         latestVersion = (version as IMacsploitVersion).relVersion;
-    } else if (client === CLIENT_NAME_HYDROGEN) {
-        latestVersion =
-            (version as IHydrogenVersion).macos.exploit_version ?? null;
-    } else if (client === CLIENT_NAME_RONIX) {
-        latestVersion =
-            (version as IHydrogenVersion).macos.exploit_version ?? null;
     } else if (client === CLIENT_NAME_OPIUMWARE) {
         latestVersion = (version as IOpiumwareVersion).CurrentVersion;
-    } else if (client === CLIENT_NAME_DELTA) {
-        latestVersion = version;
     }
 
     const style: React.CSSProperties = {

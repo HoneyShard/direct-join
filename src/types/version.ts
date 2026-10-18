@@ -13,23 +13,6 @@ export interface IMacsploitVersion {
     changelog: string;
 }
 
-export interface IHydrogenVersion {
-    global: {
-        globallogs: string;
-    };
-    windows: IHydrogenPlatformVersion;
-    macos: IHydrogenPlatformVersion;
-    ios: IHydrogenPlatformVersion;
-    android: IHydrogenPlatformVersion;
-}
-
-export interface IHydrogenPlatformVersion {
-    product?: string;
-    exploit_version?: string;
-    roblox_version?: string;
-    changelog?: string;
-}
-
 export interface IOpiumwareVersion {
     CurrentVersion: string;
     SupportedRobloxVersion: string;

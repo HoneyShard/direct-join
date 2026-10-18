@@ -3,19 +3,18 @@ import { Menu } from "@tauri-apps/api/menu";
 import { AnimatePresence } from "motion/react";
 import { useState } from "react";
 import {
-    CLIENT_NAME_HYDROGEN,
     CLIENT_NAME_MACSPLOIT,
     CLIENT_NAME_OPIUMWARE,
-    CLIENT_NAME_RONIX,
     CONTEXT_MENU_ITEMS,
 } from "../../constants";
-import { useContextStore, useModalStore } from "../../store";
+import { useModalStore } from "../../store";
 import type { IProfile } from "../../types/profile";
 import type { IState } from "../../types/state";
 import { removeProfile } from "../../utils";
 import { useMenuIcon } from "../../utils/menuIcon";
 import EditProfileModal from "../EditProfileModal";
 import MacsploitModal from "../MacsploitModal";
+import RelaunchModal from "../RelaunchModal";
 import Status from "../Shared/Status";
 import Profile from "./Profile";
 import Thumbnail from "./Thumbnail";
@@ -31,12 +30,15 @@ interface Props {
 
 export default function Account({ active, profile, state, onClick }: Props) {
     const modal = useModalStore();
-    const context = useContextStore();
     const [profileModal, setProfileModal] = useState<React.ReactNode | null>(
         null,
     );
     const [macsploitModal, setMacsploitModal] =
         useState<React.ReactNode | null>(null);
+
+    const [relaunchModal, setRelaunchModal] = useState<React.ReactNode | null>(
+        null,
+    );
 
     // Create a function to handle activation that can be called from both mouse and keyboard events
     const handleActivate = () => {
@@ -63,6 +65,12 @@ export default function Account({ active, profile, state, onClick }: Props) {
                     action: handleEvents,
                 },
                 {
+                    id: "relaunch_settings",
+                    text: CONTEXT_MENU_ITEMS.RELAUNCH_SETTINGS,
+                    icon: "Refresh",
+                    action: handleEvents,
+                },
+                {
                     id: "delete_profile",
                     text: CONTEXT_MENU_ITEMS.DELETE_PROFILE,
                     icon: "StopProgress",
@@ -71,12 +79,6 @@ export default function Account({ active, profile, state, onClick }: Props) {
                 {
                     id: "open_profile_folder",
                     text: CONTEXT_MENU_ITEMS.OPEN_PROFILE_FOLDER,
-                    icon: "Folder",
-                    action: handleEvents,
-                },
-                {
-                    id: "open_container_folder",
-                    text: CONTEXT_MENU_ITEMS.OPEN_CONTAINER_FOLDER,
                     icon: "Folder",
                     action: handleEvents,
                 },
@@ -98,6 +100,13 @@ export default function Account({ active, profile, state, onClick }: Props) {
                 const destruct = () => setMacsploitModal(null);
                 setMacsploitModal(
                     <MacsploitModal profile={profile} destruct={destruct} />,
+                );
+                break;
+            }
+            case "relaunch_settings": {
+                const destruct = () => setRelaunchModal(null);
+                setRelaunchModal(
+                    <RelaunchModal profile={profile} destruct={destruct} />,
                 );
                 break;
             }
@@ -159,44 +168,6 @@ export default function Account({ active, profile, state, onClick }: Props) {
                 }
                 break;
             }
-            case "open_container_folder": {
-                const open = await invoke<number>("open_container_folder", {
-                    id: profile.id,
-                }).catch((err) => new Error(err));
-
-                if (open instanceof Error) {
-                    const id = crypto.randomUUID();
-                    modal.add({
-                        id,
-                        title: "Failed to open container folder",
-                        text: open.message,
-                        buttons: [
-                            {
-                                text: "Okay",
-                                onClick: () => modal.remove(id),
-                            },
-                        ],
-                    });
-                    return;
-                }
-
-                if (open !== 0) {
-                    const id = crypto.randomUUID();
-                    modal.add({
-                        id,
-                        title: "Failed to open container folder",
-                        text: `Could not open container folder with code ${open}.`,
-                        buttons: [
-                            {
-                                text: "Okay",
-                                onClick: () => modal.remove(id),
-                            },
-                        ],
-                    });
-                    return;
-                }
-                break;
-            }
         }
     }
 
@@ -245,12 +216,6 @@ export default function Account({ active, profile, state, onClick }: Props) {
                 )
             ) {
                 statusText += ` ${state.port}`;
-            } else if (
-                [CLIENT_NAME_HYDROGEN, CLIENT_NAME_RONIX].includes(state.client)
-            ) {
-                if (state.profileId === context.id) {
-                    statusText += " Attached";
-                }
             }
         }
     }
@@ -260,6 +225,7 @@ export default function Account({ active, profile, state, onClick }: Props) {
             <AnimatePresence>
                 {profileModal}
                 {macsploitModal}
+                {relaunchModal}
             </AnimatePresence>
             <button
                 type="button"

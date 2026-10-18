@@ -6,6 +6,7 @@ export {
     installClient,
     launchClient,
     removeClient,
+    startProfile,
     stopClient,
 } from "./clients";
 
