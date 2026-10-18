@@ -88,20 +88,20 @@ pub struct OpiumwareVersion {
     pub RequiredUpd: bool,
 }
 
+#[derive(Debug, Deserialize)]
+struct WeaoExploit {
+    title: String,
+    version: String,
+    rbxversion: String,
+}
+
 #[tauri::command]
-pub async fn get_opiumware_version(app_handle: AppHandle) -> Result<OpiumwareVersion, String> {
+pub async fn get_opiumware_version() -> Result<OpiumwareVersion, String> {
     let client = Client::new();
-    let url =
-        format!("https://raw.githubusercontent.com/norbyv1/OpiumwareInstall/main/version.json");
+    let url = format!("https://weao.xyz/api/status/exploits/Opiumware");
     let response = client
         .get(url)
-        .header(
-            "User-Agent",
-            format!(
-                "RaptorManager/{}",
-                app_handle.package_info().version.to_string()
-            ),
-        )
+        .header("User-Agent", "WEAO-3PService")
         .send()
         .await
         .map_err(|e| e.to_string())?;
@@ -112,8 +112,17 @@ pub async fn get_opiumware_version(app_handle: AppHandle) -> Result<OpiumwareVer
     }
 
     let body = response
-        .json::<OpiumwareVersion>()
+        .json::<WeaoExploit>()
         .await
         .map_err(|e| e.to_string())?;
-    Ok(body)
+    if !body.title.eq_ignore_ascii_case("Opiumware") {
+        return Err(format!("Unexpected exploit returned: {}", body.title));
+    }
+
+    Ok(OpiumwareVersion {
+        CurrentVersion: body.version,
+        SupportedRobloxVersion: body.rbxversion,
+        Changelog: String::new(),
+        RequiredUpd: false,
+    })
 }
