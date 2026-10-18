@@ -56,7 +56,7 @@ function App() {
                                 modal.remove(updatingId);
                                 updateModalId.current = null;
                                 openUrl(
-                                    "https://github.com/DollarNoob/Raptor-Manager/releases/latest",
+                                    "https://github.com/HoneyShard/direct-join/releases/latest",
                                 );
                             },
                         },

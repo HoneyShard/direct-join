@@ -48,9 +48,9 @@
     },
     "plugins": {
         "updater": {
-            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkxRTVGNTBGODg5NUM3QjYKUldTMng1V0lEL1hsa1c0Z0ZpOThhRGlXNGtJck03RnhHSjhoUDRxSjZCZ1FlaERwS210cGJsRVkK",
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE1MjRBRUYxQzc4MTJEQjQKUldTMExZSEg4YTRrRlFxZ0lxZjErTXh4NU02VTN2SUU0bEtSWFlYR1hWN2t6QWMrTXpuRG14cGcK",
             "endpoints": [
-                "https://github.com/DollarNoob/Raptor-Manager/releases/latest/download/latest.json"
+                "https://github.com/HoneyShard/direct-join/releases/latest/download/latest.json"
             ]
         }
     }
