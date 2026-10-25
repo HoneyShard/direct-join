@@ -8,6 +8,12 @@ export interface IModal {
     progress?: number;
     progressText?: string;
     isIndeterminate?: boolean;
+    input?: IModalInput;
+}
+
+export interface IModalInput {
+    placeholder: string;
+    value: string;
 }
 
 export interface IModalButton {

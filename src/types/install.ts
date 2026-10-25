@@ -3,6 +3,7 @@ export interface IInstallProgress {
         | "download-roblox"
         | "download-ipa"
         | "install-roblox"
+        | "run-installer"
         | "install-ipa"
         | "download-insert-dylib"
         | "install-insert-dylib"

@@ -63,6 +63,11 @@ export default function WorkspaceWindow() {
                         progress={modal.modals[0].progress}
                         progressText={modal.modals[0].progressText}
                         isIndeterminate={modal.modals[0].isIndeterminate}
+                        input={modal.modals[0].input}
+                        onInput={(value) => {
+                            const { id, input } = modal.modals[0];
+                            if (input) modal.update(id, { input: { ...input, value } });
+                        }}
                     >
                         {modal.modals[0].buttons.map((button) => (
                             <ModalButton

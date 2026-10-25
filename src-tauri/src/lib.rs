@@ -10,6 +10,7 @@ mod cookies;
 mod decompiler;
 mod installer;
 mod macsploit;
+mod opiumware;
 mod roblox;
 mod updater;
 mod versions;
@@ -50,6 +51,7 @@ pub fn run() {
             versions::get_macsploit_version,
             versions::get_opiumware_version,
             installer::install_client,
+            opiumware::install_opiumware_custom,
             installer::remove_client,
             installer::clean_cache,
             installer::clean_leftover_cache,

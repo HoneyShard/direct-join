@@ -12,3 +12,6 @@ export const CLIENT_MODIFIED = [
     CLIENT_NAME_MACSPLOIT,
     CLIENT_NAME_OPIUMWARE,
 ] as const;
+
+// Version recorded for installs done through a custom command, which cannot be tracked
+export const CUSTOM_INSTALL_VERSION = "custom";

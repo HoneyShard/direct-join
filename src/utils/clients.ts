@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import {
     CLIENT_NAME_MACSPLOIT,
+    CUSTOM_INSTALL_VERSION,
     CLIENT_NAME_OPIUMWARE,
     CLIENT_NAME_VANILLA,
 } from "../constants";
@@ -174,24 +175,33 @@ export async function installClient(client: string) {
     }).catch((err: string) => new Error(err));
     if (installed instanceof Error) throw installed;
 
+    await recordInstall(client, dylibVersion);
+}
+
+/**
+ * Installs Opiumware from a user supplied install command (e.g. a private Apple Silicon build).
+ * @param command - Shell command that leaves a patched Roblox.app in Applications
+ */
+export async function installOpiumwareCustom(command: string) {
+    const installed = await invoke("install_opiumware_custom", {
+        command,
+    }).catch((err: string) => new Error(err));
+    if (installed instanceof Error) throw installed;
+
+    await recordInstall(CLIENT_NAME_OPIUMWARE, CUSTOM_INSTALL_VERSION);
+}
+
+async function recordInstall(client: string, version: string) {
     const config = useConfigStore.getState();
     const newConfig = {
         ...config.config,
-        clients: [
-            ...config.config.clients,
-            {
-                name: client,
-                version: dylibVersion,
-            },
-        ],
+        clients: [...config.config.clients, { name: client, version }],
     };
 
     const written = await import("./config").then(({ writeConfig }) =>
         writeConfig(newConfig),
     );
     if (written) config.setConfig(newConfig);
-
-    return;
 }
 
 /**

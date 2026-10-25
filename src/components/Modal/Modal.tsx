@@ -3,6 +3,7 @@ import React from "react";
 import Text from "./Text";
 import Title from "./Title";
 import { oklch } from "../../utils/colors";
+import type { IModalInput } from "../../types/modal";
 
 interface Props {
     title: string;
@@ -11,6 +12,8 @@ interface Props {
     progress?: number;
     progressText?: string;
     isIndeterminate?: boolean;
+    input?: IModalInput;
+    onInput?: (value: string) => void;
 }
 
 export default function Modal({
@@ -20,6 +23,8 @@ export default function Modal({
     progress,
     progressText,
     isIndeterminate,
+    input,
+    onInput,
 }: Props) {
     const lines = React.useMemo(
         () =>
@@ -50,6 +55,18 @@ export default function Modal({
         display: "flex",
         gap: 8,
         marginTop: 8,
+    };
+
+    const inputStyle: React.CSSProperties = {
+        marginTop: 8,
+        padding: "4px 12px",
+        backgroundColor: oklch(0.15, 0, 0),
+        color: oklch(0.9, 0, 0),
+        border: 0,
+        borderRadius: 12,
+        outline: 0,
+        fontFamily: "TASA Explorer",
+        fontSize: 14,
     };
 
     const blurStyle: React.CSSProperties = {
@@ -84,6 +101,16 @@ export default function Modal({
                         </React.Fragment>
                     ))}
                 </Text>
+                {input && (
+                    <input
+                        autoFocus
+                        spellCheck={false}
+                        style={inputStyle}
+                        placeholder={input.placeholder}
+                        value={input.value}
+                        onChange={(event) => onInput?.(event.target.value)}
+                    />
+                )}
                 {/* progress bar and info text */}
                 {(progress !== undefined ||
                     progressText ||

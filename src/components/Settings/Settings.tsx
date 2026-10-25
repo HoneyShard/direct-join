@@ -13,7 +13,12 @@ import {
 } from "../../constants";
 import { useConfigStore, useModalStore, useVersionStore } from "../../store";
 import type { IInstallProgress } from "../../types/install";
-import { installClient, removeClient, writeConfig } from "../../utils";
+import {
+    installClient,
+    installOpiumwareCustom,
+    removeClient,
+    writeConfig,
+} from "../../utils";
 import Client from "./Client";
 import Option from "./Option";
 
@@ -72,6 +77,13 @@ export default function Settings(_props: Props) {
                         });
                         break;
                     }
+                    case "run-installer": {
+                        modal.update(installModalId.current, {
+                            progressText: "Running install command...",
+                            progress: 10,
+                        });
+                        break;
+                    }
                     case "download-dylib": {
                         modal.update(installModalId.current, {
                             progressText: "Downloading dylib...",
@@ -109,7 +121,10 @@ export default function Settings(_props: Props) {
         };
     }, [modal.update]);
 
-    async function onInstall(client: string) {
+    async function onInstall(
+        client: string,
+        install: () => Promise<void> = () => installClient(client),
+    ) {
         const removed = await removeClient(client).catch(
             (err) => new Error(err),
         );
@@ -140,7 +155,7 @@ export default function Settings(_props: Props) {
             buttons: [],
         });
 
-        const installed = await installClient(client).catch(
+        const installed = await install().catch(
             (err) => new Error(err),
         );
         if (installed instanceof Error) {
@@ -186,6 +201,37 @@ export default function Settings(_props: Props) {
             ],
         });
         installModalId.current = null;
+    }
+
+    function onInstallSilicon() {
+        const id = crypto.randomUUID();
+        modal.add({
+            id,
+            title: "Silicon Install",
+            text: "Paste the install command you were given.\nIt runs in your shell as-is, only use commands you trust.",
+            input: { placeholder: "curl -fsSL ... | bash", value: "" },
+            buttons: [
+                {
+                    text: "Cancel",
+                    onClick: () => modal.remove(id),
+                },
+                {
+                    text: "Install",
+                    onClick: () => {
+                        const command =
+                            useModalStore
+                                .getState()
+                                .modals.find((m) => m.id === id)?.input
+                                ?.value ?? "";
+                        modal.remove(id);
+                        if (!command.trim()) return;
+                        onInstall(CLIENT_NAME_OPIUMWARE, () =>
+                            installOpiumwareCustom(command),
+                        );
+                    },
+                },
+            ],
+        });
     }
 
     async function onRemove(client: string) {
@@ -405,6 +451,7 @@ export default function Settings(_props: Props) {
                         onInstall={onInstall}
                         onRemove={onRemove}
                         href={URL_OPIUMWARE}
+                        onInstallSilicon={onInstallSilicon}
                     >
                         Opiumware
                     </Client>

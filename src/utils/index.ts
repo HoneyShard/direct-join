@@ -4,6 +4,7 @@
  */
 export {
     installClient,
+    installOpiumwareCustom,
     launchClient,
     removeClient,
     startProfile,

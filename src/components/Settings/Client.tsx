@@ -9,6 +9,7 @@ import {
     CLIENT_NAME_MACSPLOIT,
     STATUS_NOT_INSTALLED,
     CLIENT_NAME_OPIUMWARE,
+    CUSTOM_INSTALL_VERSION,
 } from "../../constants";
 import TrashIcon from "../icons/TrashIcon";
 import Button from "../Shared/Button";
@@ -23,6 +24,7 @@ interface Props {
     href?: string;
     onInstall: (client: string) => void;
     onRemove: (client: string) => void;
+    onInstallSilicon?: () => void;
     children?: React.ReactNode;
 }
 
@@ -33,6 +35,7 @@ export default function Client({
     href,
     onInstall,
     onRemove,
+    onInstallSilicon,
     children,
 }: Props) {
     const client = children?.toString() ?? CLIENT_NAME_VANILLA;
@@ -76,19 +79,25 @@ export default function Client({
         <div style={style}>
             <div style={containerStyle}>
                 <Text>{children}</Text>
-                <Status
-                    color={
-                        installation
-                            ? currentVersion === latestVersion
-                                ? "green"
-                                : "orange"
-                            : "red"
-                    }
-                >
-                    {installation && currentVersion
-                        ? `v${currentVersion.replace("Version-", "").replace("v", "")}`
-                        : STATUS_NOT_INSTALLED}
-                </Status>
+                {installation && currentVersion === CUSTOM_INSTALL_VERSION ? (
+                    <div title="The version cannot be fully tracked because this client was installed with a custom command.">
+                        <Status color="gray">ⓘ Custom</Status>
+                    </div>
+                ) : (
+                    <Status
+                        color={
+                            installation
+                                ? currentVersion === latestVersion
+                                    ? "green"
+                                    : "orange"
+                                : "red"
+                        }
+                    >
+                        {installation && currentVersion
+                            ? `v${currentVersion.replace("Version-", "").replace("v", "")}`
+                            : STATUS_NOT_INSTALLED}
+                    </Status>
+                )}
             </div>
             <Thumbnail thumbnail={thumbnail} size={72} href={href} />
             <div style={buttonContainerStyle}>
@@ -118,6 +127,27 @@ export default function Client({
                     >
                         Install
                     </Button>
+                )}
+                {onInstallSilicon && (
+                    <div title="Install Silicon (custom command)">
+                        <Button
+                            variant="settings"
+                            color="blue"
+                            style={{ maxWidth: 30 }} // square
+                            icon={
+                                <img
+                                    src="/silicon.png"
+                                    alt="Apple Silicon"
+                                    style={{
+                                        width: 20,
+                                        height: 20,
+                                        borderRadius: 4,
+                                    }}
+                                />
+                            }
+                            onClick={onInstallSilicon}
+                        />
+                    </div>
                 )}
                 {installation && (
                     <Button
