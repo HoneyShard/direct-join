@@ -7,6 +7,7 @@ import {
     useStore,
 } from "../../store";
 import { launchClient, removeProfile, stopClient } from "../../utils";
+import { noteLaunch } from "../../utils/relaunch";
 import FunnelIcon from "../icons/FunnelIcon";
 import MinusIcon from "../icons/MinusIcon";
 import PlusIcon from "../icons/PlusIcon";
@@ -144,6 +145,7 @@ export default function AccountManager(_props: Props) {
             (launched as IState).client = CLIENT_NAME_VANILLA;
         }
         store.updateState(launched);
+        noteLaunch(profile.id, client);
     }
 
     async function onStop(profile: IProfile | null = null) {

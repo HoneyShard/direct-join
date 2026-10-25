@@ -9,15 +9,38 @@ import { updateProfile } from "./profiles";
 import { IState } from "../types";
 import { noteLaunch } from "./relaunch";
 
+// Launches share the client bundle's Info.plist (the bundle identifier is
+// rewritten per profile right before spawning), so they must not interleave.
+// Otherwise concurrent relaunches end up running under the same identifier.
+const LAUNCH_SETTLE_MS = 4_000;
+let launchQueue: Promise<unknown> = Promise.resolve();
+
 /**
  * Launches a client for a profile with the given cookie.
+ * Launches are serialized, see above.
  * Unlocks keychain, writes cookies, modifies bundle identifier, and starts the client.
  * @param client - The client name to launch
  * @param profileId - The ID of the profile to launch
  * @param cookie - The cookie for the profile
  * @returns The launch result with state information
  */
-export async function launchClient(
+export function launchClient(
+    client: string,
+    profileId: string,
+    cookie: string,
+) {
+    const run = launchQueue.then(() =>
+        launchClientUnlocked(client, profileId, cookie),
+    );
+    // The player only reads its bundle identifier (and so its cookies) a moment
+    // after spawning, keep the plist untouched until then
+    launchQueue = run
+        .catch(() => {})
+        .then(() => new Promise((r) => setTimeout(r, LAUNCH_SETTLE_MS)));
+    return run;
+}
+
+async function launchClientUnlocked(
     client: string,
     profileId: string,
     cookie: string,
